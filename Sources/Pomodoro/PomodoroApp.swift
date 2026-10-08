@@ -9,8 +9,10 @@ struct PomodoroApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("🍅 25:00") {
+        MenuBarExtra {
             ContentView().environmentObject(timer)
+        } label: {
+            Text("🍅 \(timer.remaining.clock)")
         }
         .menuBarExtraStyle(.window)
     }
