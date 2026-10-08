@@ -2,6 +2,9 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var timer: PomodoroTimer
+    @AppStorage(Settings.workKey) private var workMinutes = 25
+    @AppStorage(Settings.shortBreakKey) private var shortBreakMinutes = 5
+    @AppStorage(Settings.longBreakKey) private var longBreakMinutes = 15
 
     var body: some View {
         VStack(spacing: 12) {
@@ -18,9 +21,18 @@ struct ContentView: View {
                 Button("Skip") { timer.skip() }
             }
             Divider()
+            VStack(alignment: .leading, spacing: 6) {
+                Stepper("Focus: \(workMinutes) min", value: $workMinutes, in: 1...90)
+                Stepper("Short break: \(shortBreakMinutes) min", value: $shortBreakMinutes, in: 1...30)
+                Stepper("Long break: \(longBreakMinutes) min", value: $longBreakMinutes, in: 1...60)
+            }
+            .onChange(of: workMinutes) { timer.applySettings() }
+            .onChange(of: shortBreakMinutes) { timer.applySettings() }
+            .onChange(of: longBreakMinutes) { timer.applySettings() }
+            Divider()
             Button("Quit") { NSApplication.shared.terminate(nil) }
         }
         .padding()
-        .frame(width: 220)
+        .frame(width: 240)
     }
 }

@@ -1,13 +1,31 @@
+import Foundation
+
+enum Settings {
+    static let workKey = "workMinutes"
+    static let shortBreakKey = "shortBreakMinutes"
+    static let longBreakKey = "longBreakMinutes"
+
+    static func registerDefaults() {
+        UserDefaults.standard.register(defaults: [
+            workKey: 25,
+            shortBreakKey: 5,
+            longBreakKey: 15,
+        ])
+    }
+}
+
 enum Phase {
     case work, shortBreak, longBreak
 
-    var seconds: Int {
+    var minutesKey: String {
         switch self {
-        case .work: return 25 * 60
-        case .shortBreak: return 5 * 60
-        case .longBreak: return 15 * 60
+        case .work: return Settings.workKey
+        case .shortBreak: return Settings.shortBreakKey
+        case .longBreak: return Settings.longBreakKey
         }
     }
+
+    var seconds: Int { UserDefaults.standard.integer(forKey: minutesKey) * 60 }
 
     var emoji: String {
         switch self {

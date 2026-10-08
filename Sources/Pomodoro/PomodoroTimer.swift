@@ -35,6 +35,11 @@ final class PomodoroTimer: ObservableObject {
         remaining = phase.seconds
     }
 
+    /// Pick up changed durations when the clock is idle.
+    func applySettings() {
+        if !isRunning { remaining = phase.seconds }
+    }
+
     /// Jump to the next phase without finishing the current one.
     func skip() {
         advance()

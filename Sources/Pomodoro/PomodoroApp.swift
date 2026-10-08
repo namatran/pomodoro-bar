@@ -5,6 +5,7 @@ struct PomodoroApp: App {
     @StateObject private var timer = PomodoroTimer()
 
     init() {
+        Settings.registerDefaults()
         NSApplication.shared.setActivationPolicy(.accessory)
     }
 
