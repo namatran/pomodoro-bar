@@ -12,7 +12,7 @@ struct PomodoroApp: App {
         MenuBarExtra {
             ContentView().environmentObject(timer)
         } label: {
-            Text("🍅 \(timer.remaining.clock)")
+            Text("\(timer.phase.emoji) \(timer.remaining.clock)")
         }
         .menuBarExtraStyle(.window)
     }

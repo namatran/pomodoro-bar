@@ -5,6 +5,9 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 12) {
+            Text(timer.phase.label)
+                .font(.headline)
+                .foregroundStyle(.secondary)
             Text(timer.remaining.clock)
                 .font(.system(size: 40, weight: .semibold, design: .monospaced))
             HStack {
@@ -12,6 +15,7 @@ struct ContentView: View {
                     timer.isRunning ? timer.pause() : timer.start()
                 }
                 Button("Reset") { timer.reset() }
+                Button("Skip") { timer.skip() }
             }
             Divider()
             Button("Quit") { NSApplication.shared.terminate(nil) }
