@@ -6,6 +6,7 @@ struct PomodoroApp: App {
 
     init() {
         Settings.registerDefaults()
+        Notifier.requestAuthorization()
         NSApplication.shared.setActivationPolicy(.accessory)
     }
 

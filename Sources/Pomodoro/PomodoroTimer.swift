@@ -55,7 +55,13 @@ final class PomodoroTimer: ObservableObject {
     private func tick() {
         guard isRunning else { return }
         remaining -= 1
-        if remaining <= 0 { advance() }
+        if remaining <= 0 { finishPhase() }
+    }
+
+    /// The clock ran out naturally (as opposed to skipping).
+    private func finishPhase() {
+        Notifier.phaseEnded(phase, next: nextPhase)
+        advance()
     }
 
     private func advance() {
