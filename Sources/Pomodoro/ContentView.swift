@@ -20,6 +20,9 @@ struct ContentView: View {
                 Button("Reset") { timer.reset() }
                 Button("Skip") { timer.skip() }
             }
+            Text("Today: \(timer.completedToday) 🍅")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
             Divider()
             VStack(alignment: .leading, spacing: 6) {
                 Stepper("Focus: \(workMinutes) min", value: $workMinutes, in: 1...90)

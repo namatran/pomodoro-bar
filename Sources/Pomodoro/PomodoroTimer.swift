@@ -10,9 +10,17 @@ final class PomodoroTimer: ObservableObject {
     @Published private(set) var phase: Phase = .work
     @Published private(set) var remaining: Int = Phase.work.seconds
     @Published private(set) var isRunning = false
+    @Published private(set) var completedToday = PomodoroLog.todayCount()
 
     private var workSessionsInCycle = 0
     private var ticker: Timer?
+
+    init() {
+        // Roll "Today" over at midnight even when nothing finishes.
+        NotificationCenter.default.addObserver(forName: .NSCalendarDayChanged, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in self?.completedToday = PomodoroLog.todayCount() }
+        }
+    }
 
     func start() {
         guard !isRunning, remaining > 0 else { return }
@@ -60,6 +68,10 @@ final class PomodoroTimer: ObservableObject {
 
     /// The clock ran out naturally (as opposed to skipping).
     private func finishPhase() {
+        if phase == .work {
+            PomodoroLog.recordCompleted()
+            completedToday = PomodoroLog.todayCount()
+        }
         Notifier.phaseEnded(phase, next: nextPhase)
         advance()
     }
