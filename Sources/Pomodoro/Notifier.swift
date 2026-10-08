@@ -1,4 +1,4 @@
-import AppKit
+import Foundation
 import UserNotifications
 
 enum Notifier {
@@ -11,7 +11,6 @@ enum Notifier {
     }
 
     static func phaseEnded(_ phase: Phase, next: Phase) {
-        NSSound(named: "Glass")?.play()
         guard canNotify else { return }
         let content = UNMutableNotificationContent()
         content.title = "\(phase.label) finished"

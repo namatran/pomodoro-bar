@@ -11,9 +11,12 @@ final class PomodoroTimer: ObservableObject {
     @Published private(set) var remaining: Int = Phase.work.seconds
     @Published private(set) var isRunning = false
     @Published private(set) var completedToday = PomodoroLog.todayCount()
+    @Published private(set) var isAlarming = false
 
     private var workSessionsInCycle = 0
     private var ticker: Timer?
+    private let alarm = Alarm()
+    private var alarmCutoff: Task<Void, Never>?
 
     init() {
         // Roll "Today" over at midnight even when nothing finishes.
@@ -23,6 +26,7 @@ final class PomodoroTimer: ObservableObject {
     }
 
     func start() {
+        stopAlarm()
         guard !isRunning, remaining > 0 else { return }
         isRunning = true
         let timer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
@@ -39,6 +43,7 @@ final class PomodoroTimer: ObservableObject {
     }
 
     func reset() {
+        stopAlarm()
         pause()
         remaining = phase.seconds
     }
@@ -50,7 +55,16 @@ final class PomodoroTimer: ObservableObject {
 
     /// Jump to the next phase without finishing the current one.
     func skip() {
+        stopAlarm()
         advance()
+    }
+
+    func stopAlarm() {
+        guard isAlarming else { return }
+        alarmCutoff?.cancel()
+        alarmCutoff = nil
+        alarm.stop()
+        isAlarming = false
     }
 
     private var nextPhase: Phase {
@@ -74,6 +88,18 @@ final class PomodoroTimer: ObservableObject {
         }
         Notifier.phaseEnded(phase, next: nextPhase)
         advance()
+        ringAlarm()
+    }
+
+    private func ringAlarm() {
+        alarm.start()
+        isAlarming = true
+        // Don't ring forever if nobody is at the desk.
+        alarmCutoff = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(60))
+            guard !Task.isCancelled else { return }
+            self?.stopAlarm()
+        }
     }
 
     private func advance() {

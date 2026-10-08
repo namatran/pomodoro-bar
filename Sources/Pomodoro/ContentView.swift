@@ -8,6 +8,11 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 12) {
+            if timer.isAlarming {
+                Button("Stop alarm") { timer.stopAlarm() }
+                    .buttonStyle(.borderedProminent)
+                    .keyboardShortcut(.defaultAction)
+            }
             Text(timer.phase.label)
                 .font(.headline)
                 .foregroundStyle(.secondary)
