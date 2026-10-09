@@ -8,7 +8,7 @@ SwiftUI `MenuBarExtra` app in a Swift Package (no Xcode project; Command Line To
 - Bundle as .app (menu bar only, no Dock icon): `./build_app.sh && open Pomodoro.app`
 
 ## Workflow
-- One feature per commit, Conventional Commits (`feat: add ...`, no trailing period).
+- Make small, logical commits using Conventional Commits (`type: description`, no trailing period).
 - The user runs builds in their own terminal; do not run `swift build` or `swift run` unless asked.
 - After each commit, stop and summarise what changed.
-- Do not push or create remotes unless asked.
+- Never push. Do not create remotes.
