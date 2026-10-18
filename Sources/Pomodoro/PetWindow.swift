@@ -12,7 +12,7 @@ final class PetController {
     private let popout: PopoutController
     let sprites = Sprites()
 
-    init(timer: PomodoroTimer) {
+    init(timer: PomodoroTimer, stopwatch: Stopwatch) {
         let size = NSSize(width: Self.width, height: Self.width + Self.bob * 2)
         panel = NSPanel(
             contentRect: NSRect(origin: Self.savedOrigin(size: size) ?? Self.defaultOrigin(size: size), size: size),
@@ -20,7 +20,7 @@ final class PetController {
             backing: .buffered,
             defer: false
         )
-        popout = PopoutController(timer: timer)
+        popout = PopoutController(timer: timer, stopwatch: stopwatch)
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
@@ -41,7 +41,7 @@ final class PetController {
         mouse.onDragEnd = { origin in
             UserDefaults.standard.set([origin.x, origin.y], forKey: Self.originKey)
         }
-        let host = NSHostingView(rootView: PetView(timer: timer, sprites: sprites))
+        let host = NSHostingView(rootView: PetView(timer: timer, stopwatch: stopwatch, sprites: sprites))
         host.frame = mouse.bounds
         host.autoresizingMask = [.width, .height]
         mouse.addSubview(host)
@@ -114,11 +114,12 @@ final class PetMouseView: NSView {
 
 struct PetView: View {
     @ObservedObject var timer: PomodoroTimer
+    @ObservedObject var stopwatch: Stopwatch
     @ObservedObject var sprites: Sprites
     @State private var up = false
 
     var body: some View {
-        let state = PetState(timer: timer)
+        let state = PetState(timer: timer, stopwatch: stopwatch)
         Group {
             if let image = sprites.image(for: state) {
                 Image(nsImage: image).resizable().scaledToFit()

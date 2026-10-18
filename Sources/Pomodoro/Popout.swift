@@ -33,7 +33,7 @@ final class PopoutController {
 
     var isOpen: Bool { panel.isVisible }
 
-    init(timer: PomodoroTimer) {
+    init(timer: PomodoroTimer, stopwatch: Stopwatch) {
         panel = PopoutPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.isOpaque = false
         panel.backgroundColor = .clear
@@ -41,7 +41,7 @@ final class PopoutController {
         panel.level = NSWindow.Level(rawValue: NSWindow.Level.floating.rawValue + 1)
         panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
         panel.hidesOnDeactivate = false
-        panel.contentView = FirstMouseHostingView(rootView: PopoutView(timer: timer, onClose: { [weak self] in self?.close() }))
+        panel.contentView = FirstMouseHostingView(rootView: PopoutView(timer: timer, stopwatch: stopwatch, onClose: { [weak self] in self?.close() }))
 
         // The content's height changes with it, so re-centre on the pet.
         resizeObserver = NotificationCenter.default.addObserver(forName: NSWindow.didResizeNotification, object: panel, queue: .main) { [weak self] _ in
@@ -86,20 +86,33 @@ final class PopoutController {
     }
 }
 
+enum PopoutTab: String, CaseIterable {
+    case timer = "Timer", stopwatch = "Stopwatch"
+}
+
 struct PopoutView: View {
     @ObservedObject var timer: PomodoroTimer
+    @ObservedObject var stopwatch: Stopwatch
     let onClose: () -> Void
+
+    @State private var tab = PopoutTab.timer
 
     var body: some View {
         VStack(spacing: 12) {
             HStack {
-                Text("Timer").font(.headline)
-                Spacer()
+                Picker("Tab", selection: $tab) {
+                    ForEach(PopoutTab.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
                 Button(action: onClose) { Image(systemName: "xmark") }
                     .buttonStyle(.borderless)
                     .help("Close")
             }
-            TimerTab(timer: timer)
+            switch tab {
+            case .timer: TimerTab(timer: timer)
+            case .stopwatch: StopwatchTab(stopwatch: stopwatch)
+            }
         }
         .padding(14)
         .frame(width: 260)

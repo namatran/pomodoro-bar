@@ -5,12 +5,14 @@ enum PetState: String, CaseIterable {
     case idle, focus, onBreak = "break", celebrate
 
     @MainActor
-    init(timer: PomodoroTimer) {
+    init(timer: PomodoroTimer, stopwatch: Stopwatch) {
         if timer.isAlarming {
             // The timer holds on the phase that just finished.
             self = timer.phase == .work ? .celebrate : .onBreak
         } else if timer.isRunning {
             self = timer.phase == .work ? .focus : .onBreak
+        } else if stopwatch.isRunning {
+            self = .focus
         } else {
             self = .idle
         }

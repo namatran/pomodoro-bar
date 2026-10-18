@@ -4,10 +4,11 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Shared by the menu bar and the pet. Lazy so it's built after `PomodoroApp.init` registers the default durations.
     lazy var timer = PomodoroTimer()
+    let stopwatch = Stopwatch()
     private var pet: PetController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        pet = PetController(timer: timer)
+        pet = PetController(timer: timer, stopwatch: stopwatch)
     }
 
     func applicationWillTerminate(_ notification: Notification) {
