@@ -1,7 +1,17 @@
 import SwiftUI
 
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    private var pet: PetController?
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        pet = PetController()
+    }
+}
+
 @main
 struct PomodoroApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var timer = PomodoroTimer()
 
     init() {
