@@ -6,9 +6,15 @@ final class PopoutPanel: NSPanel {
     override var canBecomeKey: Bool { true }
 }
 
-/// Buttons respond to the first click even while another app is active.
+/// Buttons respond to the first click even while another app is active, and a click
+/// makes the panel key so typing reaches it.
 final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func mouseDown(with event: NSEvent) {
+        window?.makeKey()
+        super.mouseDown(with: event)
+    }
 }
 
 /// The panel beside the pet: opens on whichever side has room, clamped on screen, and follows the pet when dragged.
@@ -99,28 +105,6 @@ struct PopoutView: View {
         .frame(width: 260)
         .background(VisualEffectBackground())
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-    }
-}
-
-struct TimerTab: View {
-    @ObservedObject var timer: PomodoroTimer
-
-    var body: some View {
-        VStack(spacing: 10) {
-            Text(timer.phase.label)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            Text(timer.remaining.longClock)
-                .font(.system(size: 34, weight: .semibold, design: .monospaced))
-            HStack {
-                Button(timer.isRunning ? "Pause" : "Start") {
-                    timer.isRunning ? timer.pause() : timer.start()
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(timer.isFinished)
-                Button("Reset") { timer.reset() }
-            }
-        }
     }
 }
 

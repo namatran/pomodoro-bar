@@ -14,7 +14,7 @@ enum Settings {
     }
 }
 
-enum Phase {
+enum Phase: CaseIterable {
     case work, shortBreak, longBreak
 
     var minutesKey: String {
@@ -40,6 +40,14 @@ enum Phase {
         case .work: return "Focus"
         case .shortBreak: return "Short break"
         case .longBreak: return "Long break"
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .work: return "Focus"
+        case .shortBreak: return "Short"
+        case .longBreak: return "Long"
         }
     }
 }
