@@ -3,6 +3,9 @@ import Foundation
 extension Int {
     /// Seconds formatted as mm:ss.
     var clock: String { String(format: "%02d:%02d", self / 60, self % 60) }
+
+    /// Seconds formatted as hh:mm:ss, like Google's timer.
+    var longClock: String { String(format: "%02d:%02d:%02d", self / 3600, self / 60 % 60, self % 60) }
 }
 
 @MainActor

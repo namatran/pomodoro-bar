@@ -9,6 +9,7 @@ final class PetController {
 
     private static let originKey = "petOrigin"
     private let panel: NSPanel
+    private let popout: PopoutController
     let sprites = Sprites()
 
     init(timer: PomodoroTimer) {
@@ -19,6 +20,7 @@ final class PetController {
             backing: .buffered,
             defer: false
         )
+        popout = PopoutController(timer: timer)
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
@@ -28,6 +30,14 @@ final class PetController {
         panel.hidesOnDeactivate = false
 
         let mouse = PetMouseView(frame: NSRect(origin: .zero, size: size))
+        mouse.onClick = { [weak self] in
+            guard let self else { return }
+            popout.toggle(anchor: panel.frame)
+        }
+        mouse.onMove = { [weak self] in
+            guard let self else { return }
+            popout.follow(anchor: panel.frame)
+        }
         mouse.onDragEnd = { origin in
             UserDefaults.standard.set([origin.x, origin.y], forKey: Self.originKey)
         }
@@ -38,6 +48,7 @@ final class PetController {
         panel.contentView = mouse
 
         panel.orderFrontRegardless()
+        if PopoutController.wasOpen { popout.open(anchor: panel.frame) }
     }
 
     /// Bottom right of the main screen, clear of cost and claudepet higher up the right edge.
@@ -58,6 +69,7 @@ final class PetController {
 /// Takes every mouse event over the pet: a short press is a click, anything past the slop is a drag.
 final class PetMouseView: NSView {
     var onClick: () -> Void = {}
+    var onMove: () -> Void = {}
     var onDragEnd: (NSPoint) -> Void = { _ in }
 
     private static let dragSlop: CGFloat = 4
@@ -86,6 +98,7 @@ final class PetMouseView: NSView {
         if !dragging, hypot(dx, dy) < Self.dragSlop { return }
         dragging = true
         window.setFrameOrigin(NSPoint(x: downOrigin.x + dx, y: downOrigin.y + dy))
+        onMove()
     }
 
     override func mouseUp(with event: NSEvent) {
