@@ -33,7 +33,7 @@ final class PopoutController {
 
     var isOpen: Bool { panel.isVisible }
 
-    init(timer: PomodoroTimer, stopwatch: Stopwatch) {
+    init(timer: PomodoroTimer, stopwatch: Stopwatch, today: MockToday) {
         panel = PopoutPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.isOpaque = false
         panel.backgroundColor = .clear
@@ -41,7 +41,7 @@ final class PopoutController {
         panel.level = NSWindow.Level(rawValue: NSWindow.Level.floating.rawValue + 1)
         panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
         panel.hidesOnDeactivate = false
-        panel.contentView = FirstMouseHostingView(rootView: PopoutView(timer: timer, stopwatch: stopwatch, onClose: { [weak self] in self?.close() }))
+        panel.contentView = FirstMouseHostingView(rootView: PopoutView(timer: timer, stopwatch: stopwatch, today: today, onClose: { [weak self] in self?.close() }))
 
         // The content's height changes with it, so re-centre on the pet.
         resizeObserver = NotificationCenter.default.addObserver(forName: NSWindow.didResizeNotification, object: panel, queue: .main) { [weak self] _ in
@@ -87,12 +87,13 @@ final class PopoutController {
 }
 
 enum PopoutTab: String, CaseIterable {
-    case timer = "Timer", stopwatch = "Stopwatch"
+    case timer = "Timer", stopwatch = "Stopwatch", today = "Today"
 }
 
 struct PopoutView: View {
     @ObservedObject var timer: PomodoroTimer
     @ObservedObject var stopwatch: Stopwatch
+    @ObservedObject var today: MockToday
     let onClose: () -> Void
 
     @State private var tab = PopoutTab.timer
@@ -112,6 +113,7 @@ struct PopoutView: View {
             switch tab {
             case .timer: TimerTab(timer: timer)
             case .stopwatch: StopwatchTab(stopwatch: stopwatch)
+            case .today: TodayTab(today: today)
             }
         }
         .padding(14)

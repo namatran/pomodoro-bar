@@ -25,7 +25,7 @@ final class PomodoroTimer: ObservableObject {
     @Published private(set) var isAlarming = false
 
     /// Called when Reset or Quit saves a focus run.
-    var onSessionSaved: (Session) -> Void = { _ in }
+    var onSessionSaved: @MainActor (Session) -> Void = { _ in }
 
     private var workSessionsInCycle = 0
     private var ticker: Timer?

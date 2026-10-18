@@ -5,10 +5,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Shared by the menu bar and the pet. Lazy so it's built after `PomodoroApp.init` registers the default durations.
     lazy var timer = PomodoroTimer()
     let stopwatch = Stopwatch()
+    let today = MockToday()
     private var pet: PetController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        pet = PetController(timer: timer, stopwatch: stopwatch)
+        timer.onSessionSaved = { [today] in today.add($0) }
+        pet = PetController(timer: timer, stopwatch: stopwatch, today: today)
     }
 
     func applicationWillTerminate(_ notification: Notification) {

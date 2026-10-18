@@ -12,7 +12,7 @@ final class PetController {
     private let popout: PopoutController
     let sprites = Sprites()
 
-    init(timer: PomodoroTimer, stopwatch: Stopwatch) {
+    init(timer: PomodoroTimer, stopwatch: Stopwatch, today: MockToday) {
         let size = NSSize(width: Self.width, height: Self.width + Self.bob * 2)
         panel = NSPanel(
             contentRect: NSRect(origin: Self.savedOrigin(size: size) ?? Self.defaultOrigin(size: size), size: size),
@@ -20,7 +20,7 @@ final class PetController {
             backing: .buffered,
             defer: false
         )
-        popout = PopoutController(timer: timer, stopwatch: stopwatch)
+        popout = PopoutController(timer: timer, stopwatch: stopwatch, today: today)
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
