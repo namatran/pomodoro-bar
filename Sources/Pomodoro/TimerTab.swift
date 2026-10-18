@@ -21,6 +21,10 @@ struct TimerTab: View {
             Text(digits.map(Self.format) ?? timer.remaining.longClock)
                 .font(.system(size: 34, weight: .semibold, design: .monospaced))
                 .foregroundStyle(digits == nil ? Color.primary : Color.accentColor)
+                // Overlaid rather than laid out, so the digits don't shift when it appears.
+                .overlay(alignment: .trailing) {
+                    if digits != nil { BlinkingCaret().offset(x: 6) }
+                }
                 .focusable()
                 .focused($editing)
                 .focusEffectDisabled()
@@ -85,5 +89,17 @@ struct TimerTab: View {
     private static func seconds(_ digits: String) -> Int {
         let n = Int(digits) ?? 0
         return n / 10000 * 3600 + n / 100 % 100 * 60 + n % 100
+    }
+}
+
+/// A text-field-style caret that blinks while typing, like Google's timer.
+private struct BlinkingCaret: View {
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 0.5)) { context in
+            Rectangle()
+                .fill(Color.accentColor)
+                .frame(width: 2, height: 30)
+                .opacity(Int(context.date.timeIntervalSinceReferenceDate * 2) % 2 == 0 ? 1 : 0)
+        }
     }
 }
