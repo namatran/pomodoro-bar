@@ -117,6 +117,7 @@ struct TimerTab: View {
                     timer.isRunning ? timer.pause() : timer.start()
                 }
                 .buttonStyle(.borderedProminent)
+                .disabled(timer.isFinished)
                 Button("Reset") { timer.reset() }
             }
         }

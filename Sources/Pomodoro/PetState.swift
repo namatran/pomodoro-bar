@@ -7,8 +7,8 @@ enum PetState: String, CaseIterable {
     @MainActor
     init(timer: PomodoroTimer) {
         if timer.isAlarming {
-            // The timer has already moved on, so a break phase means focus just finished.
-            self = timer.phase == .work ? .onBreak : .celebrate
+            // The timer holds on the phase that just finished.
+            self = timer.phase == .work ? .celebrate : .onBreak
         } else if timer.isRunning {
             self = timer.phase == .work ? .focus : .onBreak
         } else {

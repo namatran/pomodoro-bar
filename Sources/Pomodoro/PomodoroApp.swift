@@ -9,6 +9,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         pet = PetController(timer: timer)
     }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        timer.saveOnQuit()
+    }
 }
 
 @main

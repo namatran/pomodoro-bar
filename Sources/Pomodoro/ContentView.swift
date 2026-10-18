@@ -23,7 +23,6 @@ struct ContentView: View {
                     timer.isRunning ? timer.pause() : timer.start()
                 }
                 Button("Reset") { timer.reset() }
-                Button("Skip") { timer.skip() }
             }
             Text("Today: \(timer.completedToday) 🍅")
                 .font(.subheadline)
