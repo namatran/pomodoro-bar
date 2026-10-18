@@ -1,38 +1,37 @@
 import SwiftUI
 
-/// Phase picker, the clock, Start/Pause and Reset. Before a run starts, click the clock and
-/// type digits that fill in from the right, like Google's timer.
+/// Focus | Break picker, the clock, Start/Pause and Reset. While the clock isn't running, click it
+/// to edit the time the way Google's timer does: the caret goes where you click, ←/→ move it,
+/// digits insert at the caret and push the leftmost one off.
 struct TimerTab: View {
     @ObservedObject var timer: PomodoroTimer
 
-    /// Digits typed so far, newest last; nil when not editing.
-    @State private var digits: String?
+    /// hh:mm:ss as six digits while editing; nil otherwise.
+    @State private var draft: [Int]?
+    /// The digits when editing began, so an unchanged Enter does nothing.
+    @State private var original: [Int] = []
+    /// How many digits sit left of the caret, 0...6.
+    @State private var caret = 6
+    @State private var hovering = false
     @FocusState private var editing: Bool
 
     var body: some View {
         VStack(spacing: 10) {
-            Picker("Phase", selection: Binding(get: { timer.phase }, set: { timer.select($0) })) {
+            Picker("Mode", selection: Binding(get: { timer.phase }, set: { timer.select($0) })) {
                 ForEach(Phase.allCases, id: \.self) { Text($0.label).tag($0) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
             .disabled(!timer.isFresh)
 
-            Text(digits.map(Self.format) ?? timer.remaining.longClock)
-                .font(.system(size: 34, weight: .semibold, design: .monospaced))
-                .foregroundStyle(digits == nil ? Color.primary : Color.accentColor)
-                // Overlaid rather than laid out, so the digits don't shift when it appears.
-                .overlay(alignment: .trailing) {
-                    if digits != nil { BlinkingCaret().offset(x: 6) }
-                }
+            clock
                 .focusable()
                 .focused($editing)
                 .focusEffectDisabled()
-                .onTapGesture { beginEditing() }
-                .onKeyPress(phases: .down) { handleKey($0) }
-                .help(timer.canType ? "Click to type a time" : "")
+                .onHover { hovering = $0 }
+                .onKeyPress(phases: [.down, .repeat]) { handleKey($0) }
 
-            Text(digits == nil ? " " : "Enter to start · Esc to cancel")
+            Text(hint)
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -46,46 +45,92 @@ struct TimerTab: View {
             }
         }
         .onChange(of: editing) {
-            if !editing { digits = nil }
+            if !editing { draft = nil }
         }
     }
 
-    private func beginEditing() {
+    /// Six digits and two colons. Each digit is its own view so a click can place the caret beside it.
+    private var clock: some View {
+        let digits = draft ?? Self.digits(of: timer.remaining)
+        return HStack(spacing: 0) {
+            ForEach(0..<6, id: \.self) { i in
+                if i == 2 || i == 4 {
+                    Text(":").onTapGesture { beginEditing(caret: i) }
+                }
+                Text("\(digits[i])")
+                    .overlay(alignment: .leading) {
+                        if draft != nil && caret == 0 && i == 0 { BlinkingCaret().offset(x: -2) }
+                    }
+                    .overlay(alignment: .trailing) {
+                        if draft != nil && caret == i + 1 { BlinkingCaret().offset(x: 1) }
+                    }
+                    .onTapGesture { beginEditing(caret: i + 1) }
+            }
+        }
+        .font(.system(size: 34, weight: .semibold, design: .monospaced))
+        .foregroundStyle(draft == nil ? Color.primary : Color.accentColor)
+    }
+
+    private var hint: String {
+        if draft != nil { return "Enter to start · Esc to cancel" }
+        guard hovering else { return " " }
+        if timer.isRunning { return "Pause to change the time" }
+        return timer.hasStarted ? "Click to type a time · ends this run" : "Click to type a time"
+    }
+
+    private func beginEditing(caret: Int) {
         guard timer.canType else { return }
-        digits = ""
+        if draft == nil {
+            original = Self.digits(of: timer.remaining)
+            draft = original
+        }
+        self.caret = caret
         editing = true
     }
 
     private func handleKey(_ press: KeyPress) -> KeyPress.Result {
-        guard let typed = digits else { return .ignored }
+        guard var digits = draft else { return .ignored }
         switch press.key {
         case .return:
-            let seconds = Self.seconds(typed)
+            let seconds = Self.seconds(digits)
             editing = false
-            if seconds > 0 { timer.start(seconds: seconds) }
+            if digits != original && seconds > 0 { timer.start(seconds: seconds) }
         case .escape:
             editing = false
+        case .leftArrow:
+            caret = max(0, caret - 1)
+        case .rightArrow:
+            caret = min(6, caret + 1)
+        case .home:
+            caret = 0
+        case .end:
+            caret = 6
         case .delete:
-            if !typed.isEmpty { digits = String(typed.dropLast()) }
+            // Remove the digit left of the caret; a zero fills in on the left, so the caret keeps its place.
+            guard caret > 0 else { return .handled }
+            digits.remove(at: caret - 1)
+            digits.insert(0, at: 0)
+            draft = digits
         default:
-            guard let c = press.characters.first, c.isASCII, c.isNumber else { return .ignored }
-            // Leading zeros change nothing, and hh:mm:ss holds six digits.
-            if (typed.isEmpty && c == "0") || typed.count == 6 { return .handled }
-            digits = typed + String(c)
+            guard let c = press.characters.first, c.isASCII, let digit = c.wholeNumberValue else { return .ignored }
+            // Insert at the caret and drop the leftmost digit, so the caret keeps its place.
+            guard caret > 0 else { return .handled }
+            digits.insert(digit, at: caret)
+            digits.removeFirst()
+            draft = digits
         }
         return .handled
     }
 
-    /// "2500" → "00:25:00".
-    private static func format(_ digits: String) -> String {
-        let padded = Array(String(repeating: "0", count: 6 - digits.count) + digits)
-        return "\(String(padded[0...1])):\(String(padded[2...3])):\(String(padded[4...5]))"
+    /// 754 seconds → [0, 0, 1, 2, 3, 4]. Hours stop at 99.
+    private static func digits(of seconds: Int) -> [Int] {
+        let h = min(seconds / 3600, 99), m = seconds / 60 % 60, s = seconds % 60
+        return [h / 10, h % 10, m / 10, m % 10, s / 10, s % 10]
     }
 
-    /// Like Google, "90" means 90 seconds rather than being rejected.
-    private static func seconds(_ digits: String) -> Int {
-        let n = Int(digits) ?? 0
-        return n / 10000 * 3600 + n / 100 % 100 * 60 + n % 100
+    /// Like Google, 90 in the seconds place means 90 seconds rather than being rejected.
+    private static func seconds(_ d: [Int]) -> Int {
+        (d[0] * 10 + d[1]) * 3600 + (d[2] * 10 + d[3]) * 60 + d[4] * 10 + d[5]
     }
 }
 
