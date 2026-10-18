@@ -12,11 +12,11 @@ struct TimerTab: View {
     var body: some View {
         VStack(spacing: 10) {
             Picker("Phase", selection: Binding(get: { timer.phase }, set: { timer.select($0) })) {
-                ForEach(Phase.allCases, id: \.self) { Text($0.shortLabel).tag($0) }
+                ForEach(Phase.allCases, id: \.self) { Text($0.label).tag($0) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .disabled(!timer.canEdit)
+            .disabled(!timer.isFresh)
 
             Text(digits.map(Self.format) ?? timer.remaining.longClock)
                 .font(.system(size: 34, weight: .semibold, design: .monospaced))
@@ -30,7 +30,7 @@ struct TimerTab: View {
                 .focusEffectDisabled()
                 .onTapGesture { beginEditing() }
                 .onKeyPress(phases: .down) { handleKey($0) }
-                .help(timer.canEdit ? "Click to type a time" : "")
+                .help(timer.canType ? "Click to type a time" : "")
 
             Text(digits == nil ? " " : "Enter to start · Esc to cancel")
                 .font(.caption)
@@ -51,7 +51,7 @@ struct TimerTab: View {
     }
 
     private func beginEditing() {
-        guard timer.canEdit else { return }
+        guard timer.canType else { return }
         digits = ""
         editing = true
     }
@@ -62,10 +62,7 @@ struct TimerTab: View {
         case .return:
             let seconds = Self.seconds(typed)
             editing = false
-            if seconds > 0 {
-                timer.setLength(seconds)
-                timer.start()
-            }
+            if seconds > 0 { timer.start(seconds: seconds) }
         case .escape:
             editing = false
         case .delete:

@@ -9,10 +9,15 @@ final class MockToday: ObservableObject {
         let day = Calendar.current.startOfDay(for: Date())
         func at(_ hour: Int, _ minute: Int) -> Date { day.addingTimeInterval(TimeInterval(hour * 3600 + minute * 60)) }
         sessions = [
-            Session(id: UUID(), startedAt: at(9, 0), completedAt: at(9, 25), endedAt: at(9, 26), durationSeconds: 25 * 60),
+            Session(id: UUID(), kind: .focus, startedAt: at(9, 0), completedAt: at(9, 25), endedAt: at(9, 26),
+                    durationSeconds: 25 * 60),
             // Paused for a minute, so it hit zero at 9:58, and Reset came a few minutes later.
-            Session(id: UUID(), startedAt: at(9, 32), completedAt: at(9, 58), endedAt: at(10, 2), durationSeconds: 25 * 60),
-            Session(id: UUID(), startedAt: at(11, 10), completedAt: nil, endedAt: at(11, 22), durationSeconds: 12 * 60),
+            Session(id: UUID(), kind: .focus, startedAt: at(9, 32), completedAt: at(9, 58), endedAt: at(10, 2),
+                    durationSeconds: 25 * 60),
+            Session(id: UUID(), kind: .rest, startedAt: at(10, 2), completedAt: at(10, 7), endedAt: nil,
+                    durationSeconds: 5 * 60),
+            Session(id: UUID(), kind: .focus, startedAt: at(11, 10), completedAt: nil, endedAt: at(11, 22),
+                    durationSeconds: 12 * 60),
         ]
     }
 
@@ -62,7 +67,7 @@ struct TodayTab: View {
     private func row(_ session: Session) -> some View {
         HStack(spacing: 6) {
             VStack(alignment: .leading, spacing: 1) {
-                Text("\(Self.time(session.startedAt)) → \(Self.time(session.endedAt))")
+                Text("\(Self.time(session.startedAt)) → \(Self.time(session.end))")
                     .monospacedDigit()
                 if let completedAt = session.completedAt {
                     Text("finished at \(Self.time(completedAt))")

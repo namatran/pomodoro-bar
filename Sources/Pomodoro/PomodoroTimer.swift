@@ -8,10 +8,11 @@ extension Int {
     var longClock: String { String(format: "%02d:%02d:%02d", self / 3600, self / 60 % 60, self % 60) }
 }
 
-/// Google-timer style: Start/Pause and Reset. At zero it rings and holds; Reset saves the focus run and moves on.
+/// Google-timer style: Start/Pause and Reset, in Focus or Break mode. At zero it rings and holds;
+/// Reset saves the run and switches mode.
 @MainActor
 final class PomodoroTimer: ObservableObject {
-    /// Shorter focus runs are treated as accidental and not saved.
+    /// Shorter runs are treated as accidental and not saved.
     static let minimumSessionSeconds = 60
 
     @Published private(set) var phase: Phase = .work
@@ -19,24 +20,27 @@ final class PomodoroTimer: ObservableObject {
     @Published private(set) var isRunning = false
     /// The clock reached zero and is waiting for Reset.
     @Published private(set) var isFinished = false
-    /// Started at least once since the last reset; the phase and length are locked until then.
+    /// Started at least once since the last reset; the mode is locked until then.
     @Published private(set) var hasStarted = false
     @Published private(set) var completedToday = PomodoroLog.todayCount()
     @Published private(set) var isAlarming = false
 
-    /// Called when Reset or Quit saves a focus run.
+    /// Called when Reset, Quit or a typed new time saves a run.
     var onSessionSaved: @MainActor (Session) -> Void = { _ in }
 
-    private var workSessionsInCycle = 0
     private var ticker: Timer?
     private let alarm = Alarm()
     private var alarmCutoff: Task<Void, Never>?
 
     private var startedAt: Date?
     private var completedAt: Date?
-    private var focusedSeconds = 0
+    private var countedSeconds = 0
 
-    var canEdit: Bool { !hasStarted }
+    /// Fresh or just reset: the mode can change and settings apply.
+    var isFresh: Bool { !hasStarted }
+
+    /// A new time can be typed whenever the clock isn't running.
+    var canType: Bool { !isRunning }
 
     init() {
         // Roll "Today" over at midnight even when nothing finishes.
@@ -60,37 +64,43 @@ final class PomodoroTimer: ObservableObject {
         ticker = timer
     }
 
+    /// Start a typed time. A run already under way (paused or finished) ends and is saved first.
+    func start(seconds: Int) {
+        guard canType, seconds > 0 else { return }
+        if hasStarted {
+            stopAlarm()
+            saveRun()
+            clearRun()
+        }
+        remaining = seconds
+        start()
+    }
+
     func pause() {
         isRunning = false
         ticker?.invalidate()
         ticker = nil
     }
 
-    /// Save the focus run, then load the next phase if the clock had finished, or restart this one.
+    /// Save the run, then switch mode if the clock had finished, or restart this one.
     func reset() {
         stopAlarm()
         pause()
         saveRun()
-        if isFinished { advance() }
+        if isFinished { phase = phase.other }
         clearRun()
     }
 
-    /// Choose the phase by hand, before the run has started.
+    /// Choose Focus or Break by hand, before the run has started.
     func select(_ phase: Phase) {
-        guard canEdit else { return }
+        guard isFresh else { return }
         self.phase = phase
         remaining = phase.seconds
     }
 
-    /// A typed length for this run only; the next phase goes back to the settings.
-    func setLength(_ seconds: Int) {
-        guard canEdit, seconds > 0 else { return }
-        remaining = seconds
-    }
-
     /// Pick up changed durations when the clock hasn't started.
     func applySettings() {
-        if canEdit { remaining = phase.seconds }
+        if isFresh { remaining = phase.seconds }
     }
 
     func stopAlarm() {
@@ -101,22 +111,15 @@ final class PomodoroTimer: ObservableObject {
         isAlarming = false
     }
 
-    /// Save an unsaved focus run on Quit.
+    /// Save an unsaved run on Quit.
     func saveOnQuit() {
         saveRun()
-    }
-
-    private var nextPhase: Phase {
-        switch phase {
-        case .work: return (workSessionsInCycle + 1) % 4 == 0 ? .longBreak : .shortBreak
-        case .shortBreak, .longBreak: return .work
-        }
     }
 
     private func tick() {
         guard isRunning else { return }
         remaining -= 1
-        if phase == .work { focusedSeconds += 1 }
+        countedSeconds += 1
         if remaining <= 0 { finishPhase() }
     }
 
@@ -124,22 +127,26 @@ final class PomodoroTimer: ObservableObject {
     private func finishPhase() {
         pause()
         isFinished = true
-        if phase == .work { completedAt = Date() }
-        Notifier.phaseEnded(phase, next: nextPhase)
+        completedAt = Date()
+        Notifier.phaseEnded(phase, next: phase.other)
         ringAlarm()
     }
 
     private func saveRun() {
-        guard phase == .work, let startedAt, focusedSeconds >= Self.minimumSessionSeconds else { return }
-        let session = Session(
-            id: UUID(),
-            startedAt: startedAt,
-            completedAt: completedAt,
-            endedAt: Date(),
-            durationSeconds: focusedSeconds
-        )
-        PomodoroLog.recordCompleted()
-        completedToday = PomodoroLog.todayCount()
+        guard let startedAt, countedSeconds >= Self.minimumSessionSeconds else { return }
+        let now = Date()
+        let session: Session
+        switch phase {
+        case .work:
+            session = Session(id: UUID(), kind: .focus, startedAt: startedAt, completedAt: completedAt,
+                              endedAt: now, durationSeconds: countedSeconds)
+            PomodoroLog.recordCompleted()
+            completedToday = PomodoroLog.todayCount()
+        case .rest:
+            // A break ends when its clock did, or when Reset cut it short; it has no separate save time.
+            session = Session(id: UUID(), kind: .rest, startedAt: startedAt, completedAt: completedAt ?? now,
+                              endedAt: nil, durationSeconds: countedSeconds)
+        }
         onSessionSaved(session)
         self.startedAt = nil
     }
@@ -147,7 +154,7 @@ final class PomodoroTimer: ObservableObject {
     private func clearRun() {
         startedAt = nil
         completedAt = nil
-        focusedSeconds = 0
+        countedSeconds = 0
         isFinished = false
         hasStarted = false
         remaining = phase.seconds
@@ -162,11 +169,5 @@ final class PomodoroTimer: ObservableObject {
             guard !Task.isCancelled else { return }
             self?.stopAlarm()
         }
-    }
-
-    private func advance() {
-        let next = nextPhase
-        if phase == .work { workSessionsInCycle += 1 }
-        phase = next
     }
 }

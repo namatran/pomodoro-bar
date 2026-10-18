@@ -2,52 +2,42 @@ import Foundation
 
 enum Settings {
     static let workKey = "workMinutes"
-    static let shortBreakKey = "shortBreakMinutes"
-    static let longBreakKey = "longBreakMinutes"
+    /// Keeps the old short-break key so an existing setting carries over.
+    static let breakKey = "shortBreakMinutes"
 
     static func registerDefaults() {
         UserDefaults.standard.register(defaults: [
             workKey: 25,
-            shortBreakKey: 5,
-            longBreakKey: 15,
+            breakKey: 5,
         ])
     }
 }
 
 enum Phase: CaseIterable {
-    case work, shortBreak, longBreak
+    case work, rest
 
     var minutesKey: String {
         switch self {
         case .work: return Settings.workKey
-        case .shortBreak: return Settings.shortBreakKey
-        case .longBreak: return Settings.longBreakKey
+        case .rest: return Settings.breakKey
         }
     }
 
     var seconds: Int { UserDefaults.standard.integer(forKey: minutesKey) * 60 }
 
+    var other: Phase { self == .work ? .rest : .work }
+
     var emoji: String {
         switch self {
         case .work: return "🍅"
-        case .shortBreak: return "☕️"
-        case .longBreak: return "🌴"
+        case .rest: return "☕️"
         }
     }
 
     var label: String {
         switch self {
         case .work: return "Focus"
-        case .shortBreak: return "Short break"
-        case .longBreak: return "Long break"
-        }
-    }
-
-    var shortLabel: String {
-        switch self {
-        case .work: return "Focus"
-        case .shortBreak: return "Short"
-        case .longBreak: return "Long"
+        case .rest: return "Break"
         }
     }
 }
