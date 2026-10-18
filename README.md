@@ -2,6 +2,8 @@
 
 A small Pomodoro timer that lives in the macOS menu bar. Built with SwiftUI `MenuBarExtra` as a Swift Package, so it builds with the Command Line Tools alone (no Xcode).
 
+> **Status: incomplete, private.** This is a personal project, built for my own Mac and not maintained for anyone else. Known issue: with the Swift 6.4 toolchain the app can crash when you press a button (`Incorrect actor executor assumption; Expected same executor as MainActor`). The cause hasn't been found yet.
+
 ## Features
 - Countdown in the menu bar: 🍅 focus, ☕️ short break, 🌴 long break
 - Start, pause, reset and skip
