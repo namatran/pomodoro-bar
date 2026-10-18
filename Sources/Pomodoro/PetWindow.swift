@@ -9,8 +9,9 @@ final class PetController {
 
     private static let originKey = "petOrigin"
     private let panel: NSPanel
+    let sprites = Sprites()
 
-    init() {
+    init(timer: PomodoroTimer) {
         let size = NSSize(width: Self.width, height: Self.width + Self.bob * 2)
         panel = NSPanel(
             contentRect: NSRect(origin: Self.savedOrigin(size: size) ?? Self.defaultOrigin(size: size), size: size),
@@ -30,7 +31,7 @@ final class PetController {
         mouse.onDragEnd = { origin in
             UserDefaults.standard.set([origin.x, origin.y], forKey: Self.originKey)
         }
-        let host = NSHostingView(rootView: PetView())
+        let host = NSHostingView(rootView: PetView(timer: timer, sprites: sprites))
         host.frame = mouse.bounds
         host.autoresizingMask = [.width, .height]
         mouse.addSubview(host)
@@ -99,15 +100,24 @@ final class PetMouseView: NSView {
 }
 
 struct PetView: View {
+    @ObservedObject var timer: PomodoroTimer
+    @ObservedObject var sprites: Sprites
     @State private var up = false
 
     var body: some View {
-        TomatoView()
-            .frame(width: PetController.width, height: PetController.width)
-            .offset(y: up ? -PetController.bob : PetController.bob)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .onAppear {
-                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) { up = true }
+        let state = PetState(timer: timer)
+        Group {
+            if let image = sprites.image(for: state) {
+                Image(nsImage: image).resizable().scaledToFit()
+            } else {
+                TomatoView(state: state)
             }
+        }
+        .frame(width: PetController.width, height: PetController.width)
+        .offset(y: up ? -PetController.bob : PetController.bob)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) { up = true }
+        }
     }
 }

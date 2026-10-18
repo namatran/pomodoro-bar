@@ -7,7 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var pet: PetController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        pet = PetController()
+        pet = PetController(timer: timer)
     }
 }
 
