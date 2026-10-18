@@ -21,14 +21,17 @@ final class MockToday: ObservableObject {
         ]
     }
 
-    var totalSeconds: Int { sessions.reduce(0) { $0 + $1.durationSeconds } }
+    /// Breaks are listed but don't count toward the header.
+    var focusSessions: [Session] { sessions.filter { $0.kind == .focus } }
+
+    var focusSeconds: Int { focusSessions.reduce(0) { $0 + $1.durationSeconds } }
 
     func add(_ session: Session) { sessions.append(session) }
 
     func delete(_ id: UUID) { sessions.removeAll { $0.id == id } }
 }
 
-/// Count, total, and the sessions newest first. Click a row for its ⌫ button; the ⌫ key works too.
+/// Focus count and total, then the sessions newest first, with breaks dimmer. Click a row for its ⌫ button; the ⌫ key works too.
 struct TodayTab: View {
     @ObservedObject var today: MockToday
 
@@ -37,7 +40,7 @@ struct TodayTab: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(today.sessions.count) 🍅 · \(Self.length(today.totalSeconds))")
+            Text("\(today.focusSessions.count) 🍅 · \(Self.length(today.focusSeconds))")
                 .font(.headline)
             if today.sessions.isEmpty {
                 Text("No sessions yet today")
@@ -67,16 +70,23 @@ struct TodayTab: View {
     private func row(_ session: Session) -> some View {
         HStack(spacing: 6) {
             VStack(alignment: .leading, spacing: 1) {
-                Text("\(Self.time(session.startedAt)) → \(Self.time(session.end))")
-                    .monospacedDigit()
-                if let completedAt = session.completedAt {
-                    Text("finished at \(Self.time(completedAt))")
-                        .font(.caption)
+                if session.kind == .rest {
+                    // Breaks are a plain start → end, dimmer than focus.
+                    Text("☕ \(Self.time(session.startedAt)) → \(Self.time(session.end))")
+                        .monospacedDigit()
                         .foregroundStyle(.secondary)
                 } else {
-                    Text("stopped early")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
+                    Text("\(Self.time(session.startedAt)) → \(Self.time(session.end))")
+                        .monospacedDigit()
+                    if let completedAt = session.completedAt {
+                        Text("finished at \(Self.time(completedAt))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("stopped early")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
                 }
             }
             Spacer()
