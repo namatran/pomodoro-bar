@@ -62,9 +62,13 @@ struct TodayTab: View {
     private func row(_ session: Session) -> some View {
         HStack(spacing: 6) {
             VStack(alignment: .leading, spacing: 1) {
-                Text(Self.times(session))
+                Text("\(Self.time(session.startedAt)) → \(Self.time(session.endedAt))")
                     .monospacedDigit()
-                if session.completedAt == nil {
+                if let completedAt = session.completedAt {
+                    Text("finished at \(Self.time(completedAt))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
                     Text("stopped early")
                         .font(.caption)
                         .foregroundStyle(.orange)
@@ -98,11 +102,9 @@ struct TodayTab: View {
         selected = nil
     }
 
-    /// Start → hit zero → reset, or start → reset when stopped early. No AM/PM, to fit the row.
-    private static func times(_ session: Session) -> String {
-        [session.startedAt, session.completedAt, session.endedAt]
-            .compactMap { $0?.formatted(.dateTime.hour(.defaultDigits(amPM: .omitted)).minute()) }
-            .joined(separator: " → ")
+    /// No AM/PM, to fit the row.
+    private static func time(_ date: Date) -> String {
+        date.formatted(.dateTime.hour(.defaultDigits(amPM: .omitted)).minute())
     }
 
     /// 1500 → "25m", 3900 → "1h 05m".
