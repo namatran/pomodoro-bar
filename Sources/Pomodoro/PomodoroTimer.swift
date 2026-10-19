@@ -129,7 +129,6 @@ final class PomodoroTimer: ObservableObject {
         case .work:
             session = Session(id: UUID(), kind: .focus, startedAt: startedAt, completedAt: completedAt,
                               endedAt: now, durationSeconds: countedSeconds)
-            PomodoroLog.recordCompleted()
         case .rest:
             // A break ends when its clock did, or when Reset cut it short; it has no separate save time.
             session = Session(id: UUID(), kind: .rest, startedAt: startedAt, completedAt: completedAt ?? now,

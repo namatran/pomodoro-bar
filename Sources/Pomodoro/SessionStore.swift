@@ -13,6 +13,8 @@ final class SessionStore: ObservableObject {
     private var canSave = true
 
     init() {
+        // The per-day counts this replaces aren't migrated.
+        UserDefaults.standard.removeObject(forKey: "completedByDay")
         load()
         // Which sessions count as today changes at midnight even though no session does.
         NotificationCenter.default.addObserver(forName: .NSCalendarDayChanged, object: nil, queue: .main) { [weak self] _ in
