@@ -49,12 +49,13 @@ struct TimerTab: View {
         }
     }
 
-    /// Six digits and two colons. Each digit is its own view so a click can place the caret beside it.
+    /// hh:mm:ss, dropping empty leading groups (`25:00`, `45`) except while typing, which shows all six
+    /// digits. Each digit is its own view so a click can place the caret beside it.
     private var clock: some View {
         let digits = draft ?? Self.digits(of: timer.remaining)
         return HStack(spacing: 0) {
-            ForEach(0..<6, id: \.self) { i in
-                if i == 2 || i == 4 {
+            ForEach(firstShownDigit..<6, id: \.self) { i in
+                if (i == 2 || i == 4) && i != firstShownDigit {
                     Text(":").onTapGesture { beginEditing(caret: i) }
                 }
                 Text("\(digits[i])")
@@ -69,6 +70,13 @@ struct TimerTab: View {
         }
         .font(.system(size: 34, weight: .semibold, design: .monospaced))
         .foregroundStyle(draft == nil ? Color.primary : Color.accentColor)
+    }
+
+    /// Like Google, the clock shrinks as it counts down: hours go below an hour, minutes below a minute.
+    private var firstShownDigit: Int {
+        guard draft == nil else { return 0 }
+        if timer.remaining >= 3600 { return 0 }
+        return timer.remaining >= 60 ? 2 : 4
     }
 
     private var hint: String {
