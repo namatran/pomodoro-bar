@@ -51,20 +51,20 @@ The app started as a Pomodoro timer and is now closer to a **focus tracker with 
 - A hint under the clock:
   - fresh: "Click to type a time"
   - paused: "Click to type a time · ends this run"
-  - running: "Click to pause and type a time"
+  - running: "Click to pause"
   - while typing: "Enter to start · Esc to cancel"
 
   It's shown in the popout itself, because macOS tooltips usually don't appear for an app that isn't in front.
 
 ### Editing the time (like Google)
-- Works in any state. Clicking a running clock pauses it first.
+- Works while the timer is fresh or paused. Clicking a running clock only pauses it, and the next click edits.
 - **Clicking the clock** keeps the current time on screen and places a blinking caret at the clicked digit.
 - **Moving the caret:** ←/→ move it one digit and skip the colons. Home/End jump to either end.
 - **Typing a digit** inserts it at the caret, and the leftmost digit drops off. With the caret at the end, digits push in from the right: `00:12:34` plus `5` gives `01:23:45`.
 - **⌫** deletes the digit left of the caret and fills in a `0` on the left.
 - **Enter** starts the new time. On a paused run, it first ends and saves the old run (stopped early). If the digits haven't changed, Enter just leaves editing.
 - **Start** while typing does the same as Enter, except that with unchanged digits it carries on with the paused run.
-- **Esc** or clicking away puts the time back and leaves the run as it was, paused if the click paused it. This differs from Google, whose Esc keeps the edit, because here only Enter or Start may end a run.
+- **Esc** or clicking away puts the time back and leaves the run untouched. This differs from Google, whose Esc keeps the edit, because here only Enter or Start may end a run.
 - Like Google, `90` in the seconds place means 90 seconds.
 
 ### When the clock hits zero

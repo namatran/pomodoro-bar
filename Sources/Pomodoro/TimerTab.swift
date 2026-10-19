@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Focus | Break picker, the clock, Start/Pause and Reset. Click the clock (pausing it if it's running)
-/// to edit the time the way Google's timer does: the caret goes where you click, ←/→ move it,
+/// Focus | Break picker, the clock, Start/Pause and Reset. Clicking a running clock pauses it; clicking
+/// it again edits the time the way Google's timer does: the caret goes where you click, ←/→ move it,
 /// digits insert at the caret and push the leftmost one off.
 struct TimerTab: View {
     @ObservedObject var timer: PomodoroTimer
@@ -88,13 +88,16 @@ struct TimerTab: View {
     private var hint: String {
         if draft != nil { return "Enter to start · Esc to cancel" }
         guard hovering else { return " " }
-        if timer.isRunning { return "Click to pause and type a time" }
+        if timer.isRunning { return "Click to pause" }
         return timer.hasStarted ? "Click to type a time · ends this run" : "Click to type a time"
     }
 
     private func beginEditing(caret: Int) {
-        // A running clock pauses first; Esc then leaves it paused.
-        if timer.isRunning { timer.pause() }
+        // On a running clock the first click only pauses; the next one edits.
+        if timer.isRunning {
+            timer.pause()
+            return
+        }
         if draft == nil {
             original = Self.digits(of: timer.remaining)
             draft = original
