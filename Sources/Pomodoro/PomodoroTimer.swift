@@ -3,9 +3,6 @@ import Foundation
 extension Int {
     /// Seconds formatted as mm:ss.
     var clock: String { String(format: "%02d:%02d", self / 60, self % 60) }
-
-    /// Seconds formatted as hh:mm:ss, like Google's timer.
-    var longClock: String { String(format: "%02d:%02d:%02d", self / 3600, self / 60 % 60, self % 60) }
 }
 
 /// Google-timer style: Start/Pause and Reset, in Focus or Break mode. At zero it rings and holds;
