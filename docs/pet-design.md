@@ -124,9 +124,16 @@ See `~/dev/pomodoro-web/docs/design.md`. It needs these changes:
 A visual redesign of the site is a separate future task.
 
 ## Build order
-Stage 1 and stage 2 (pet window, sprites, popout, Google-style rules, Stopwatch, Today) are built. Next:
-1. Stage 2b: Focus | Break model, Google-style editing and hint, break rows in Today, slimmed steppers.
-2. Stage 3: alarm bubble, right-click menu, hotkey, slimmed menu bar.
+All stages of the first round are built:
+1. Stage 1 and stage 2: pet window, sprites, popout, Google-style rules, Stopwatch, Today.
+2. Stage 2b: Focus | Break model, Google-style editing and hint, break rows in Today, slimmed steppers.
+3. Stage 3: alarm bubble, right-click menu, hotkey, slimmed menu bar.
+
+Details settled while building stage 3:
+- Pet sizes are 72, 96 and 128pt, with Medium as the default. Resizing keeps the pet's bottom centre in place.
+- The popout and the bubble both want the side with room, so while the popout is open the bubble stacks above it, or below it near the top of the screen.
+- Hiding the pet also hides the popout and bubble, and it stays hidden after a relaunch. Showing it brings back whichever were up.
+- The hotkey uses Carbon's `RegisterEventHotKey`, which needs no Accessibility permission.
 
 ## Known bug (postponed)
 A `swift run` crashed with:
@@ -135,4 +142,4 @@ A `swift run` crashed with:
 SwiftUI/Button.swift:808: Fatal error: Incorrect actor executor assumption; Expected same executor as MainActor.
 ```
 
-The process exited with code 133, a Swift runtime trap. The toolchain is Swift 6.4 while `Package.swift` declares tools-version 5.9. The trigger hasn't been identified; the owner doesn't remember what they clicked. The likeliest suspect is pressing Return on the menu bar's "Stop alarm" button (`.keyboardShortcut(.defaultAction)`), which the slimmed menu bar removes. Fix it in its own `fix:` commit if it happens again.
+The process exited with code 133, a Swift runtime trap. The toolchain is Swift 6.4 while `Package.swift` declares tools-version 5.9. The trigger hasn't been identified; the owner doesn't remember what they clicked. The likeliest suspect was pressing Return on the menu bar's "Stop alarm" button (`.keyboardShortcut(.defaultAction)`), which the slimmed menu bar has now removed. Fix it in its own `fix:` commit if it happens again.
