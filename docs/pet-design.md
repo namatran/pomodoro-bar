@@ -101,6 +101,15 @@ This replaces the shape that was first agreed with the website:
 
 A session belongs to the day it ended.
 
+## Storage
+Settled on 2026-10-19, for the second round:
+- Every session is kept in `~/Library/Application Support/Pomodoro/sessions.json`, next to the sprites folder. It's a JSON array of records with the fields above and ISO 8601 UTC times. `swift run` and `Pomodoro.app` share this one file.
+- Sessions are kept forever. The Today tab shows today's and refreshes at midnight.
+- The day isn't stored. Today takes the sessions whose end (`endedAt` for focus, `completedAt` for a break) falls on today in the current local time zone, the same way the site groups them.
+- If the file can't be read at launch, it's renamed to `sessions-unreadable-<date>.json` so nothing is lost, and the history starts empty.
+- Deleting a row in Today deletes the stored session.
+- The old `completedByDay` counts aren't migrated. `PomodoroLog.swift` is removed, and the key is cleared from UserDefaults at launch.
+
 ## Menus
 - **Menu bar (slimmed):** the title shows the mode's emoji and time, or 🔔 while the alarm rings. The menu has Show/Hide pet, Focus and Break steppers, and Quit. The timer controls move to the popout.
 - **Pet's right-click menu** (a native menu):
