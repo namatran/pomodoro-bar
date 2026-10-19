@@ -12,7 +12,16 @@ final class SessionStore: ObservableObject {
     /// Off if an unreadable file couldn't be moved aside, so saving doesn't overwrite it.
     private var canSave = true
 
-    init() { load() }
+    init() {
+        load()
+        // Which sessions count as today changes at midnight even though no session does.
+        NotificationCenter.default.addObserver(forName: .NSCalendarDayChanged, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in self?.objectWillChange.send() }
+        }
+    }
+
+    /// Sessions that ended today in the local time zone, oldest first, like the site's day groups.
+    var today: [Session] { sessions.filter { Calendar.current.isDateInToday($0.end) } }
 
     func add(_ session: Session) {
         sessions.append(session)

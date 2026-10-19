@@ -1,52 +1,24 @@
 import SwiftUI
 
-/// Today's sessions, made up until saving is wired to real storage. Runs saved by Reset are added in memory.
-@MainActor
-final class MockToday: ObservableObject {
-    @Published private(set) var sessions: [Session]
-
-    init() {
-        let day = Calendar.current.startOfDay(for: Date())
-        func at(_ hour: Int, _ minute: Int) -> Date { day.addingTimeInterval(TimeInterval(hour * 3600 + minute * 60)) }
-        sessions = [
-            Session(id: UUID(), kind: .focus, startedAt: at(9, 0), completedAt: at(9, 25), endedAt: at(9, 26),
-                    durationSeconds: 25 * 60),
-            // Paused for a minute, so it hit zero at 9:58, and Reset came a few minutes later.
-            Session(id: UUID(), kind: .focus, startedAt: at(9, 32), completedAt: at(9, 58), endedAt: at(10, 2),
-                    durationSeconds: 25 * 60),
-            Session(id: UUID(), kind: .rest, startedAt: at(10, 2), completedAt: at(10, 7), endedAt: nil,
-                    durationSeconds: 5 * 60),
-            Session(id: UUID(), kind: .focus, startedAt: at(11, 10), completedAt: nil, endedAt: at(11, 22),
-                    durationSeconds: 12 * 60),
-        ]
-    }
-
-    /// Breaks are listed but don't count toward the header.
-    var focusSessions: [Session] { sessions.filter { $0.kind == .focus } }
-
-    var focusSeconds: Int { focusSessions.reduce(0) { $0 + $1.durationSeconds } }
-
-    func add(_ session: Session) { sessions.append(session) }
-
-    func delete(_ id: UUID) { sessions.removeAll { $0.id == id } }
-}
-
 /// Focus count and total, then the sessions newest first, with breaks dimmer. Click a row for its ⌫ button; the ⌫ key works too.
 struct TodayTab: View {
-    @ObservedObject var today: MockToday
+    @ObservedObject var sessions: SessionStore
 
     @State private var selected: UUID?
     @FocusState private var focused: Bool
 
     var body: some View {
+        let today = sessions.today
+        // Breaks are listed but don't count toward the header.
+        let focus = today.filter { $0.kind == .focus }
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(today.focusSessions.count) 🍅 · \(Self.length(today.focusSeconds))")
+            Text("\(focus.count) 🍅 · \(Self.length(focus.reduce(0) { $0 + $1.durationSeconds }))")
                 .font(.headline)
-            if today.sessions.isEmpty {
+            if today.isEmpty {
                 Text("No sessions yet today")
                     .foregroundStyle(.secondary)
             }
-            ForEach(today.sessions.reversed()) { session in
+            ForEach(today.reversed()) { session in
                 row(session)
             }
         }
@@ -113,7 +85,7 @@ struct TodayTab: View {
     }
 
     private func delete(_ id: UUID) {
-        today.delete(id)
+        sessions.delete(id)
         selected = nil
     }
 

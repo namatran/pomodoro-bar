@@ -38,7 +38,7 @@ final class PetController {
     /// The right-click menu's Hide pet; the app delegate owns visibility.
     var onHide: () -> Void = {}
 
-    init(timer: PomodoroTimer, stopwatch: Stopwatch, today: MockToday, visible: Bool) {
+    init(timer: PomodoroTimer, stopwatch: Stopwatch, sessions: SessionStore, visible: Bool) {
         let size = Self.panelSize(PetSize.saved)
         panel = NSPanel(
             contentRect: NSRect(origin: Self.savedOrigin(size: size) ?? Self.defaultOrigin(size: size), size: size),
@@ -46,7 +46,7 @@ final class PetController {
             backing: .buffered,
             defer: false
         )
-        popout = PopoutController(timer: timer, stopwatch: stopwatch, today: today)
+        popout = PopoutController(timer: timer, stopwatch: stopwatch, sessions: sessions)
         bubble = BubbleController(timer: timer)
         self.timer = timer
         panel.isOpaque = false

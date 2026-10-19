@@ -8,15 +8,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     /// Shared by the menu bar and the pet. Lazy so it's built after `PomodoroApp.init` registers the default durations.
     lazy var timer = PomodoroTimer()
     let stopwatch = Stopwatch()
-    let today = MockToday()
+    let sessions = SessionStore()
     /// Remembered across launches, like the pet's position.
     @Published private(set) var isPetVisible = UserDefaults.standard.object(forKey: AppDelegate.petVisibleKey) as? Bool ?? true
     private var pet: PetController?
     private var hotKey: HotKey?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        timer.onSessionSaved = { [today] in today.add($0) }
-        pet = PetController(timer: timer, stopwatch: stopwatch, today: today, visible: isPetVisible)
+        timer.onSessionSaved = { [sessions] in sessions.add($0) }
+        pet = PetController(timer: timer, stopwatch: stopwatch, sessions: sessions, visible: isPetVisible)
         pet?.onHide = { [weak self] in self?.togglePet() }
         // claudepet already has ⌃⌥⌘P and cost has ⌃⌥⌘I.
         hotKey = HotKey(keyCode: kVK_ANSI_T, modifiers: controlKey | optionKey | cmdKey) { [weak self] in
