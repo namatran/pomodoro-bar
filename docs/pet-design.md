@@ -77,7 +77,8 @@ The app started as a Pomodoro timer and is now closer to a **focus tracker with 
 - Both focus and break runs are saved.
 
 ### Stopwatch tab
-- **Start/Stop** and **Reset**, shown as `00:00:00` with no laps or centiseconds.
+- **Start/Stop** and **Reset**, with no laps.
+- Shown like Google's stopwatch, counting hundredths from `0.00`: `3.25`, then `1:05.25`, then `1:00:05.25`. The leading group isn't padded, and hours keep counting.
 - Runs independently of the timer and is never recorded.
 
 ### Today tab
