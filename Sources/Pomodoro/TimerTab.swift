@@ -105,7 +105,7 @@ struct TimerTab: View {
             caret = 0
         case .end:
             caret = 6
-        case .delete:
+        case .delete, Self.backspace:
             // Remove the digit left of the caret; a zero fills in on the left, so the caret keeps its place.
             guard caret > 0 else { return .handled }
             digits.remove(at: caret - 1)
@@ -121,6 +121,9 @@ struct TimerTab: View {
         }
         return .handled
     }
+
+    /// The Mac's ⌫ key sends U+007F, but SwiftUI's `.delete` is U+0008, so it never matches on its own.
+    private static let backspace = KeyEquivalent("\u{7F}")
 
     /// 754 seconds → [0, 0, 1, 2, 3, 4]. Hours stop at 99.
     private static func digits(of seconds: Int) -> [Int] {
