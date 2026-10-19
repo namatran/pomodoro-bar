@@ -1,8 +1,8 @@
 import Foundation
 
 /// One saved run. Matches the website's session shape (see docs/pet-design.md).
-struct Session: Identifiable, Equatable {
-    enum Kind: String {
+struct Session: Identifiable, Equatable, Codable {
+    enum Kind: String, Codable {
         case focus, rest = "break"
     }
 

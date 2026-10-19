@@ -1,0 +1,72 @@
+import Foundation
+
+/// Every saved session, kept forever in ~/Library/Application Support/Pomodoro/sessions.json.
+/// `swift run` and Pomodoro.app share the file, so don't run both at once.
+@MainActor
+final class SessionStore: ObservableObject {
+    private static let folder = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("Pomodoro", isDirectory: true)
+    private static let file = folder.appendingPathComponent("sessions.json")
+
+    @Published private(set) var sessions: [Session] = []
+    /// Off if an unreadable file couldn't be moved aside, so saving doesn't overwrite it.
+    private var canSave = true
+
+    init() { load() }
+
+    func add(_ session: Session) {
+        sessions.append(session)
+        save()
+    }
+
+    func delete(_ id: UUID) {
+        sessions.removeAll { $0.id == id }
+        save()
+    }
+
+    private func load() {
+        guard FileManager.default.fileExists(atPath: Self.file.path) else { return }
+        do {
+            sessions = try Self.decoder.decode([Session].self, from: Data(contentsOf: Self.file))
+        } catch {
+            setAside(error)
+        }
+    }
+
+    /// Keep an unreadable file as sessions-unreadable-<date>.json and start an empty history.
+    private func setAside(_ error: Error) {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd-HHmmss"
+        let aside = Self.folder.appendingPathComponent("sessions-unreadable-\(formatter.string(from: Date())).json")
+        do {
+            try FileManager.default.moveItem(at: Self.file, to: aside)
+            NSLog("%@", "Pomodoro: couldn't read sessions.json (\(error)); moved it to \(aside.lastPathComponent)")
+        } catch {
+            canSave = false
+            NSLog("%@", "Pomodoro: couldn't read or move sessions.json (\(error)); not saving sessions")
+        }
+    }
+
+    private func save() {
+        guard canSave else { return }
+        do {
+            try FileManager.default.createDirectory(at: Self.folder, withIntermediateDirectories: true)
+            try Self.encoder.encode(sessions).write(to: Self.file, options: .atomic)
+        } catch {
+            NSLog("%@", "Pomodoro: couldn't save sessions: \(error)")
+        }
+    }
+
+    private static let encoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = .prettyPrinted
+        return encoder
+    }()
+
+    private static let decoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
+    }()
+}
