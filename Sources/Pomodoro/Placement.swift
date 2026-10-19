@@ -13,6 +13,15 @@ enum Placement {
         return clamped(NSPoint(x: x, y: anchor.midY - size.height / 2), size: size, in: screen)
     }
 
+    /// Above `panel`, or below it near the top of the screen, lined up with its edge nearest the pet.
+    static func stacked(on panel: NSRect, pet: NSRect, size: NSSize) -> NSPoint {
+        let screen = visibleFrame(around: pet)
+        let x = panel.midX < pet.midX ? panel.maxX - size.width : panel.minX
+        var y = panel.maxY + gap
+        if y + size.height > screen.maxY - margin { y = panel.minY - gap - size.height }
+        return clamped(NSPoint(x: x, y: y), size: size, in: screen)
+    }
+
     /// The visible frame of the screen under the rect's centre.
     private static func visibleFrame(around rect: NSRect) -> NSRect {
         let center = NSPoint(x: rect.midX, y: rect.midY)

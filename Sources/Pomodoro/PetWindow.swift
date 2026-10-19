@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import SwiftUI
 
 /// The floating pet: a borderless panel that bobs, drags, and remembers where it sat.
@@ -10,6 +11,9 @@ final class PetController {
     private static let originKey = "petOrigin"
     private let panel: NSPanel
     private let popout: PopoutController
+    private let bubble: BubbleController
+    private let timer: PomodoroTimer
+    private var alarmWatch: AnyCancellable?
     let sprites = Sprites()
 
     init(timer: PomodoroTimer, stopwatch: Stopwatch, today: MockToday) {
@@ -21,6 +25,8 @@ final class PetController {
             defer: false
         )
         popout = PopoutController(timer: timer, stopwatch: stopwatch, today: today)
+        bubble = BubbleController(timer: timer)
+        self.timer = timer
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
@@ -32,11 +38,17 @@ final class PetController {
         let mouse = PetMouseView(frame: NSRect(origin: .zero, size: size))
         mouse.onClick = { [weak self] in
             guard let self else { return }
-            popout.toggle(anchor: panel.frame)
+            // While it rings, a click only silences it.
+            if timer.isAlarming {
+                timer.stopAlarm()
+            } else {
+                popout.toggle(anchor: panel.frame)
+            }
         }
         mouse.onMove = { [weak self] in
             guard let self else { return }
             popout.follow(anchor: panel.frame)
+            placeBubble()
         }
         mouse.onDragEnd = { origin in
             UserDefaults.standard.set([origin.x, origin.y], forKey: Self.originKey)
@@ -47,8 +59,22 @@ final class PetController {
         mouse.addSubview(host)
         panel.contentView = mouse
 
+        popout.onLayout = { [weak self] in self?.placeBubble() }
+        alarmWatch = timer.$isAlarming.removeDuplicates().sink { [weak self] ringing in
+            guard let self else { return }
+            if ringing {
+                bubble.show(pet: panel.frame, popout: popout.openFrame)
+            } else {
+                bubble.hide()
+            }
+        }
+
         panel.orderFrontRegardless()
         if PopoutController.wasOpen { popout.open(anchor: panel.frame) }
+    }
+
+    private func placeBubble() {
+        bubble.place(pet: panel.frame, popout: popout.openFrame)
     }
 
     /// Bottom right of the main screen, clear of cost and claudepet higher up the right edge.

@@ -31,6 +31,12 @@ final class PopoutController {
 
     var isOpen: Bool { panel.isVisible }
 
+    /// Where it sits while open, for the alarm bubble to stack on.
+    var openFrame: NSRect? { isOpen ? panel.frame : nil }
+
+    /// Called after it opens, closes or moves, so the bubble can make way.
+    var onLayout: () -> Void = {}
+
     init(timer: PomodoroTimer, stopwatch: Stopwatch, today: MockToday) {
         panel = PopoutPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.isOpaque = false
@@ -58,11 +64,13 @@ final class PopoutController {
         panel.orderFrontRegardless()
         panel.invalidateShadow()
         UserDefaults.standard.set(true, forKey: Self.openKey)
+        onLayout()
     }
 
     func close() {
         panel.orderOut(nil)
         UserDefaults.standard.set(false, forKey: Self.openKey)
+        onLayout()
     }
 
     /// Track the pet while it's being dragged.
@@ -73,6 +81,7 @@ final class PopoutController {
 
     private func place() {
         panel.setFrameOrigin(Placement.beside(anchor, size: panel.frame.size))
+        onLayout()
     }
 }
 
