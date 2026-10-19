@@ -21,8 +21,6 @@ final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
 @MainActor
 final class PopoutController {
     private static let openKey = "popoutOpen"
-    private static let gap: CGFloat = 8
-    private static let margin: CGFloat = 8
 
     /// Whether it was open when the app last ran.
     static var wasOpen: Bool { UserDefaults.standard.bool(forKey: openKey) }
@@ -74,15 +72,7 @@ final class PopoutController {
     }
 
     private func place() {
-        let size = panel.frame.size
-        let center = NSPoint(x: anchor.midX, y: anchor.midY)
-        let screen = (NSScreen.screens.first { $0.frame.contains(center) } ?? NSScreen.main ?? NSScreen.screens[0]).visibleFrame
-        let onLeft = anchor.midX > screen.midX
-        var x = onLeft ? anchor.minX - Self.gap - size.width : anchor.maxX + Self.gap
-        var y = anchor.midY - size.height / 2
-        x = min(max(x, screen.minX + Self.margin), screen.maxX - size.width - Self.margin)
-        y = min(max(y, screen.minY + Self.margin), screen.maxY - size.height - Self.margin)
-        panel.setFrameOrigin(NSPoint(x: x, y: y))
+        panel.setFrameOrigin(Placement.beside(anchor, size: panel.frame.size))
     }
 }
 
