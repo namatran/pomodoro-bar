@@ -2,10 +2,29 @@ import AppKit
 import Combine
 import SwiftUI
 
+enum PetSize: String, CaseIterable {
+    case small, medium, large
+
+    static let key = "petSize"
+
+    static var saved: PetSize {
+        UserDefaults.standard.string(forKey: key).flatMap(PetSize.init(rawValue:)) ?? .medium
+    }
+
+    var width: CGFloat {
+        switch self {
+        case .small: return 72
+        case .medium: return 96
+        case .large: return 128
+        }
+    }
+
+    var label: String { rawValue.capitalized }
+}
+
 /// The floating pet: a borderless panel that bobs, drags, and remembers where it sat.
 @MainActor
 final class PetController {
-    static let width: CGFloat = 96
     static let bob: CGFloat = 3
 
     private static let originKey = "petOrigin"
@@ -20,7 +39,7 @@ final class PetController {
     var onHide: () -> Void = {}
 
     init(timer: PomodoroTimer, stopwatch: Stopwatch, today: MockToday, visible: Bool) {
-        let size = NSSize(width: Self.width, height: Self.width + Self.bob * 2)
+        let size = Self.panelSize(PetSize.saved)
         panel = NSPanel(
             contentRect: NSRect(origin: Self.savedOrigin(size: size) ?? Self.defaultOrigin(size: size), size: size),
             styleMask: [.borderless, .nonactivatingPanel],
@@ -98,6 +117,21 @@ final class PetController {
         placeBubble()
     }
 
+    /// Room for the sprite plus its bob.
+    private static func panelSize(_ size: PetSize) -> NSSize {
+        NSSize(width: size.width, height: size.width + bob * 2)
+    }
+
+    /// Grows or shrinks about the pet's bottom centre, so it stays standing on the same spot.
+    private func setSize(_ size: PetSize) {
+        UserDefaults.standard.set(size.rawValue, forKey: PetSize.key)
+        let old = panel.frame, new = Self.panelSize(size)
+        let origin = NSPoint(x: old.midX - new.width / 2, y: old.minY)
+        panel.setFrame(NSRect(origin: origin, size: new), display: true)
+        UserDefaults.standard.set([origin.x, origin.y], forKey: Self.originKey)
+        petMoved()
+    }
+
     private func resetPosition() {
         UserDefaults.standard.removeObject(forKey: Self.originKey)
         panel.setFrameOrigin(Self.defaultOrigin(size: panel.frame.size))
@@ -109,6 +143,12 @@ final class PetController {
         let menu = NSMenu()
         menu.addItem(lengthMenu("Focus length", key: Settings.workKey, choices: [15, 20, 25, 30, 45, 50, 60]))
         menu.addItem(lengthMenu("Break length", key: Settings.breakKey, choices: [5, 10, 15, 20]))
+        let current = PetSize.saved
+        menu.addItem(Self.submenu("Pet size", PetSize.allCases.map { size in
+            let item = MenuItem(size.label) { [weak self] in self?.setSize(size) }
+            item.state = size == current ? .on : .off
+            return item
+        }))
         menu.addItem(.separator())
         let hide = MenuItem("Hide pet") { [weak self] in self?.onHide() }
         // Shown only; the hot key does the work.
@@ -231,6 +271,7 @@ struct PetView: View {
     @ObservedObject var timer: PomodoroTimer
     @ObservedObject var stopwatch: Stopwatch
     @ObservedObject var sprites: Sprites
+    @AppStorage(PetSize.key) private var size = PetSize.medium
     @State private var up = false
 
     var body: some View {
@@ -242,7 +283,7 @@ struct PetView: View {
                 TomatoView(state: state)
             }
         }
-        .frame(width: PetController.width, height: PetController.width)
+        .frame(width: size.width, height: size.width)
         .offset(y: up ? -PetController.bob : PetController.bob)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
