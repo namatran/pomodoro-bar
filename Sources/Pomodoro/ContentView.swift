@@ -2,11 +2,19 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var timer: PomodoroTimer
+    @EnvironmentObject var app: AppDelegate
     @AppStorage(Settings.workKey) private var workMinutes = 25
     @AppStorage(Settings.breakKey) private var breakMinutes = 5
 
     var body: some View {
         VStack(spacing: 12) {
+            HStack {
+                Button(app.isPetVisible ? "Hide pet" : "Show pet") { app.togglePet() }
+                Text("⌃⌥⌘T")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Divider()
             if timer.isAlarming {
                 Button("Stop alarm") { timer.stopAlarm() }
                     .buttonStyle(.borderedProminent)

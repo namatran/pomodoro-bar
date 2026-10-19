@@ -73,6 +73,11 @@ final class PopoutController {
         onLayout()
     }
 
+    /// Out of sight along with the pet, but still remembered as open.
+    func hide() {
+        panel.orderOut(nil)
+    }
+
     /// Track the pet while it's being dragged.
     func follow(anchor: NSRect) {
         self.anchor = anchor

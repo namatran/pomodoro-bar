@@ -16,7 +16,7 @@ final class PetController {
     private var alarmWatch: AnyCancellable?
     let sprites = Sprites()
 
-    init(timer: PomodoroTimer, stopwatch: Stopwatch, today: MockToday) {
+    init(timer: PomodoroTimer, stopwatch: Stopwatch, today: MockToday, visible: Bool) {
         let size = NSSize(width: Self.width, height: Self.width + Self.bob * 2)
         panel = NSPanel(
             contentRect: NSRect(origin: Self.savedOrigin(size: size) ?? Self.defaultOrigin(size: size), size: size),
@@ -62,15 +62,27 @@ final class PetController {
         popout.onLayout = { [weak self] in self?.placeBubble() }
         alarmWatch = timer.$isAlarming.removeDuplicates().sink { [weak self] ringing in
             guard let self else { return }
-            if ringing {
+            if ringing && panel.isVisible {
                 bubble.show(pet: panel.frame, popout: popout.openFrame)
             } else {
                 bubble.hide()
             }
         }
 
-        panel.orderFrontRegardless()
-        if PopoutController.wasOpen { popout.open(anchor: panel.frame) }
+        setVisible(visible)
+    }
+
+    /// Hiding takes the popout and bubble along; showing brings back whichever were up.
+    func setVisible(_ visible: Bool) {
+        if visible {
+            panel.orderFrontRegardless()
+            if PopoutController.wasOpen { popout.open(anchor: panel.frame) }
+            if timer.isAlarming { bubble.show(pet: panel.frame, popout: popout.openFrame) }
+        } else {
+            panel.orderOut(nil)
+            popout.hide()
+            bubble.hide()
+        }
     }
 
     private func placeBubble() {
