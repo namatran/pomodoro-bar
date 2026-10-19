@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// The slimmed menu bar menu: the timer's controls live in the pet's popout.
 struct ContentView: View {
     @EnvironmentObject var timer: PomodoroTimer
     @EnvironmentObject var app: AppDelegate
@@ -14,26 +15,6 @@ struct ContentView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            Divider()
-            if timer.isAlarming {
-                Button("Stop alarm") { timer.stopAlarm() }
-                    .buttonStyle(.borderedProminent)
-                    .keyboardShortcut(.defaultAction)
-            }
-            Text(timer.phase.label)
-                .font(.headline)
-                .foregroundStyle(.secondary)
-            Text(timer.remaining.clock)
-                .font(.system(size: 40, weight: .semibold, design: .monospaced))
-            HStack {
-                Button(timer.isRunning ? "Pause" : "Start") {
-                    timer.isRunning ? timer.pause() : timer.start()
-                }
-                Button("Reset") { timer.reset() }
-            }
-            Text("Today: \(timer.completedToday) 🍅")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
             Divider()
             VStack(alignment: .leading, spacing: 6) {
                 Stepper("Focus: \(workMinutes) min", value: $workMinutes, in: 1...90)

@@ -62,6 +62,6 @@ struct MenuBarLabel: View {
     @ObservedObject var timer: PomodoroTimer
 
     var body: some View {
-        Text(timer.isAlarming ? "🔔 Time's up" : "\(timer.phase.emoji) \(timer.remaining.clock)")
+        Text(timer.isAlarming ? "🔔" : "\(timer.phase.emoji) \(timer.remaining.clock)")
     }
 }

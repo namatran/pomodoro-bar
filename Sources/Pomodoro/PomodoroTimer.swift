@@ -19,7 +19,6 @@ final class PomodoroTimer: ObservableObject {
     @Published private(set) var isFinished = false
     /// Started at least once since the last reset; the mode is locked until then.
     @Published private(set) var hasStarted = false
-    @Published private(set) var completedToday = PomodoroLog.todayCount()
     @Published private(set) var isAlarming = false
 
     /// Called when Reset, Quit or a typed new time saves a run.
@@ -38,13 +37,6 @@ final class PomodoroTimer: ObservableObject {
 
     /// A new time can be typed whenever the clock isn't running.
     var canType: Bool { !isRunning }
-
-    init() {
-        // Roll "Today" over at midnight even when nothing finishes.
-        NotificationCenter.default.addObserver(forName: .NSCalendarDayChanged, object: nil, queue: .main) { [weak self] _ in
-            Task { @MainActor in self?.completedToday = PomodoroLog.todayCount() }
-        }
-    }
 
     func start() {
         stopAlarm()
@@ -138,7 +130,6 @@ final class PomodoroTimer: ObservableObject {
             session = Session(id: UUID(), kind: .focus, startedAt: startedAt, completedAt: completedAt,
                               endedAt: now, durationSeconds: countedSeconds)
             PomodoroLog.recordCompleted()
-            completedToday = PomodoroLog.todayCount()
         case .rest:
             // A break ends when its clock did, or when Reset cut it short; it has no separate save time.
             session = Session(id: UUID(), kind: .rest, startedAt: startedAt, completedAt: completedAt ?? now,
