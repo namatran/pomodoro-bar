@@ -37,10 +37,16 @@ struct TimerTab: View {
 
             HStack {
                 Button(timer.isRunning ? "Pause" : "Start") {
-                    timer.isRunning ? timer.pause() : timer.start()
+                    if timer.isRunning {
+                        timer.pause()
+                    } else if let draft {
+                        commit(draft, resume: true)
+                    } else {
+                        timer.start()
+                    }
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(timer.isFinished)
+                .disabled(timer.isFinished && draft == nil)
                 Button("Reset") { timer.reset() }
             }
         }
@@ -97,13 +103,23 @@ struct TimerTab: View {
         editing = true
     }
 
+    /// Enter, or Start while typing. A new time ends any run under way and starts; unchanged digits
+    /// just leave editing, and Start then carries on with the run.
+    private func commit(_ digits: [Int], resume: Bool) {
+        editing = false
+        let seconds = Self.seconds(digits)
+        if digits != original {
+            if seconds > 0 { timer.start(seconds: seconds) }
+        } else if resume {
+            timer.start()
+        }
+    }
+
     private func handleKey(_ press: KeyPress) -> KeyPress.Result {
         guard var digits = draft else { return .ignored }
         switch press.key {
         case .return:
-            let seconds = Self.seconds(digits)
-            editing = false
-            if digits != original && seconds > 0 { timer.start(seconds: seconds) }
+            commit(digits, resume: false)
         case .escape:
             editing = false
         case .leftArrow:
