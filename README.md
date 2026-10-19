@@ -1,17 +1,21 @@
 # Pomodoro
 
-A small Pomodoro timer that lives in the macOS menu bar. Built with SwiftUI `MenuBarExtra` as a Swift Package, so it builds with the Command Line Tools alone (no Xcode).
-
-> **Status: incomplete, private.** This is a personal project, built for my own Mac and not maintained for anyone else. Known issue: with the Swift 6.4 toolchain the app can crash when you press a button (`Incorrect actor executor assumption; Expected same executor as MainActor`). The cause hasn't been found yet.
+A focus timer with a desktop pet, for macOS. A small tomato floats on screen and owns the timer, with a slim menu bar item alongside. Built with SwiftUI and AppKit as a Swift Package, so it builds with the Command Line Tools alone (no Xcode).
 
 ## Features
-- Countdown in the menu bar: 🍅 focus, ☕️ short break, 🌴 long break
-- Start, pause, reset and skip
-- Work / short break / long break cycle, with a long break after every 4th focus session
-- Adjustable durations (defaults 25 / 5 / 15 minutes)
-- Alarm when a session ends: repeating beeps until you press **Stop alarm** (or Return), start the next session, or 60 seconds pass
-- Notification banner when a session ends (bundled app only)
-- Count of focus sessions completed today
+- **Pet:** a floating, draggable tomato that bobs gently, shows a face for each state (idle, focus, break, celebrate), and stays on every Space, including over full-screen apps. It remembers where you put it.
+- **Popout:** click the pet for a frosted panel with three tabs:
+  - **Timer:** Focus | Break modes, Start/Pause and Reset, like Google's timer. Click the clock to type a time; click a running clock to pause it first.
+  - **Stopwatch:** counts hundredths, like Google's stopwatch.
+  - **Today:** today's sessions and focus total (mock data for now). Click a row and press ⌫ to delete it.
+- **Recording:** Reset saves any run of 60 seconds or more, focus or break, finished or not. Quit saves an unsaved run too.
+- **Alarm:** at zero the clock holds, beeps repeat, and a bubble beside the pet offers **Stop**. Clicking the pet also stops it, and it stops on its own after 60 seconds.
+- **Right-click menu:** focus and break lengths, pet size, hide pet, reset position, reload sprites, quit.
+- **⌃⌥⌘T** shows or hides the pet.
+- **Menu bar:** the mode's emoji and time (🔔 while ringing), with Show/Hide pet, focus and break steppers, and Quit.
+- **Your own sprites:** drop `idle.png`, `focus.png`, `break.png`, `celebrate.png` or a shared `pet.png` into `~/Library/Application Support/Pomodoro/sprites/`, then choose **Reload sprites**.
+
+See [docs/pet-design.md](docs/pet-design.md) for the full design.
 
 ## Requirements
 - macOS 14 or later
@@ -35,18 +39,29 @@ To start it at login, move `Pomodoro.app` to `/Applications` and add it under Sy
 
 ## Notes
 - Notification banners need the app bundle. `swift run` still plays the alarm but skips the banner.
-- `swift run` and `Pomodoro.app` keep separate settings and daily counts, because macOS stores them per bundle identifier.
+- `swift run` and `Pomodoro.app` keep separate settings, because macOS stores them per bundle identifier.
 - The app is ad-hoc signed, not notarized. It's meant for the Mac that built it; a copy downloaded on another Mac will be blocked by Gatekeeper.
 
 ## Layout
 ```
 Sources/Pomodoro/
-  PomodoroApp.swift    menu bar entry point
-  ContentView.swift    the dropdown panel
-  PomodoroTimer.swift  countdown, phase cycle, alarm state
-  Phase.swift          phases and duration settings
+  PomodoroApp.swift    entry point, app delegate, menu bar title
+  ContentView.swift    the menu bar dropdown
+  PetWindow.swift      the floating pet, its sizes and right-click menu
+  PetState.swift       which sprite shows, and loading custom sprites
+  TomatoView.swift     the drawn placeholder tomato
+  Popout.swift         the panel beside the pet and its tabs
+  TimerTab.swift       Focus | Break clock and Google-style editing
+  Stopwatch.swift      stopwatch model and tab
+  TodayTab.swift       today's sessions (mock data)
+  Bubble.swift         the alarm bubble
+  Placement.swift      positions panels beside the pet
+  HotKey.swift         the ⌃⌥⌘T global shortcut
+  PomodoroTimer.swift  countdown, modes, alarm state, saving runs
+  Session.swift        one saved run
+  Phase.swift          modes and duration settings
   Alarm.swift          synthesized beeping alarm
   Notifier.swift       notification banners
-  PomodoroLog.swift    completed sessions per day
+  PomodoroLog.swift    focus sessions per day (until real saving)
 build_app.sh           wraps the release build in Pomodoro.app
 ```
