@@ -75,7 +75,7 @@ struct TimerTab: View {
             }
         }
         .font(.system(size: 34, weight: .semibold, design: .monospaced))
-        .foregroundStyle(draft == nil ? Color.primary : Color.accentColor)
+        .foregroundStyle(draft == nil ? Color.primary : Color.secondary)
     }
 
     /// Like Google, the clock shrinks as it counts down: hours go below an hour, minutes below a minute.
@@ -170,7 +170,7 @@ private struct BlinkingCaret: View {
     var body: some View {
         TimelineView(.periodic(from: .now, by: 0.5)) { context in
             Rectangle()
-                .fill(Color.accentColor)
+                .fill(Color.primary)
                 .frame(width: 2, height: 30)
                 .opacity(Int(context.date.timeIntervalSinceReferenceDate * 2) % 2 == 0 ? 1 : 0)
         }
