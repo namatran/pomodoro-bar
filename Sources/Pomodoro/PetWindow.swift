@@ -16,6 +16,9 @@ final class PetController {
     private var alarmWatch: AnyCancellable?
     let sprites = Sprites()
 
+    /// The right-click menu's Hide pet; the app delegate owns visibility.
+    var onHide: () -> Void = {}
+
     init(timer: PomodoroTimer, stopwatch: Stopwatch, today: MockToday, visible: Bool) {
         let size = NSSize(width: Self.width, height: Self.width + Self.bob * 2)
         panel = NSPanel(
@@ -45,13 +48,13 @@ final class PetController {
                 popout.toggle(anchor: panel.frame)
             }
         }
-        mouse.onMove = { [weak self] in
-            guard let self else { return }
-            popout.follow(anchor: panel.frame)
-            placeBubble()
-        }
+        mouse.onMove = { [weak self] in self?.petMoved() }
         mouse.onDragEnd = { origin in
             UserDefaults.standard.set([origin.x, origin.y], forKey: Self.originKey)
+        }
+        mouse.onRightClick = { [weak self, weak mouse] event in
+            guard let self, let mouse else { return }
+            NSMenu.popUpContextMenu(makeMenu(), with: event, for: mouse)
         }
         let host = NSHostingView(rootView: PetView(timer: timer, stopwatch: stopwatch, sprites: sprites))
         host.frame = mouse.bounds
@@ -89,6 +92,56 @@ final class PetController {
         bubble.place(pet: panel.frame, popout: popout.openFrame)
     }
 
+    /// Bring the popout and bubble along after the pet moves.
+    private func petMoved() {
+        popout.follow(anchor: panel.frame)
+        placeBubble()
+    }
+
+    private func resetPosition() {
+        UserDefaults.standard.removeObject(forKey: Self.originKey)
+        panel.setFrameOrigin(Self.defaultOrigin(size: panel.frame.size))
+        petMoved()
+    }
+
+    /// Built on each right-click so the checkmarks are current.
+    private func makeMenu() -> NSMenu {
+        let menu = NSMenu()
+        menu.addItem(lengthMenu("Focus length", key: Settings.workKey, choices: [15, 20, 25, 30, 45, 50, 60]))
+        menu.addItem(lengthMenu("Break length", key: Settings.breakKey, choices: [5, 10, 15, 20]))
+        menu.addItem(.separator())
+        let hide = MenuItem("Hide pet") { [weak self] in self?.onHide() }
+        // Shown only; the hot key does the work.
+        hide.keyEquivalent = "t"
+        hide.keyEquivalentModifierMask = [.control, .option, .command]
+        menu.addItem(hide)
+        menu.addItem(MenuItem("Reset position") { [weak self] in self?.resetPosition() })
+        menu.addItem(MenuItem("Reload sprites") { [weak self] in self?.sprites.reload() })
+        menu.addItem(.separator())
+        menu.addItem(MenuItem("Quit") { NSApplication.shared.terminate(nil) })
+        return menu
+    }
+
+    /// The current length is always listed and checked, even a custom one set with the menu bar's stepper.
+    private func lengthMenu(_ title: String, key: String, choices: [Int]) -> NSMenuItem {
+        let current = UserDefaults.standard.integer(forKey: key)
+        return Self.submenu(title, Set(choices + [current]).sorted().map { minutes in
+            let item = MenuItem("\(minutes) min") { [weak self] in
+                UserDefaults.standard.set(minutes, forKey: key)
+                self?.timer.applySettings()
+            }
+            item.state = minutes == current ? .on : .off
+            return item
+        })
+    }
+
+    private static func submenu(_ title: String, _ items: [NSMenuItem]) -> NSMenuItem {
+        let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        item.submenu = NSMenu()
+        items.forEach { item.submenu?.addItem($0) }
+        return item
+    }
+
     /// Bottom right of the main screen, clear of cost and claudepet higher up the right edge.
     private static func defaultOrigin(size: NSSize) -> NSPoint {
         let frame = (NSScreen.main ?? NSScreen.screens[0]).visibleFrame
@@ -109,6 +162,7 @@ final class PetMouseView: NSView {
     var onClick: () -> Void = {}
     var onMove: () -> Void = {}
     var onDragEnd: (NSPoint) -> Void = { _ in }
+    var onRightClick: (NSEvent) -> Void = { _ in }
 
     private static let dragSlop: CGFloat = 4
     private var downMouse: NSPoint?
@@ -147,6 +201,29 @@ final class PetMouseView: NSView {
         } else {
             onClick()
         }
+    }
+
+    override func rightMouseDown(with event: NSEvent) {
+        onRightClick(event)
+    }
+}
+
+/// A menu item that runs a closure, so the menu needs no Objective-C target.
+final class MenuItem: NSMenuItem {
+    private let handler: () -> Void
+
+    init(_ title: String, handler: @escaping () -> Void) {
+        self.handler = handler
+        super.init(title: title, action: #selector(MenuItem.fire), keyEquivalent: "")
+        target = self
+    }
+
+    required init(coder: NSCoder) {
+        fatalError("not used from nibs")
+    }
+
+    @objc private func fire() {
+        handler()
     }
 }
 

@@ -17,6 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     func applicationDidFinishLaunching(_ notification: Notification) {
         timer.onSessionSaved = { [today] in today.add($0) }
         pet = PetController(timer: timer, stopwatch: stopwatch, today: today, visible: isPetVisible)
+        pet?.onHide = { [weak self] in self?.togglePet() }
         // claudepet already has ⌃⌥⌘P and cost has ⌃⌥⌘I.
         hotKey = HotKey(keyCode: kVK_ANSI_T, modifiers: controlKey | optionKey | cmdKey) { [weak self] in
             self?.togglePet()
