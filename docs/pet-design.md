@@ -47,7 +47,7 @@ The app started as a Pomodoro timer and is now closer to a **focus tracker with 
 ### Timer tab
 - A segmented **Focus | Break** picker above an hh:mm:ss display. Like Google, it hides empty leading groups and shrinks as it counts down (`01:00:00` → `59:59`, `01:00` → `59`), but keeps two digits per group. While typing, all six digits show (`00:25:00`). The menu bar title keeps the shorter `25:00`.
 - Controls are **Start/Pause** and **Reset**, as on Google's timer. There's no Skip.
-- The picker can only be changed while the timer is fresh or has just been reset. After a Reset at zero, it switches Focus ↔ Break by itself, but never starts the next run.
+- The picker can only be changed while the timer is fresh or has just been reset. After a Reset at zero, it switches Focus ↔ Break by itself, but never starts the next run. Switching modes while typing a time throws the typed time away.
 - A hint under the clock:
   - fresh: "Click to type a time"
   - paused: "Click to type a time · ends this run"

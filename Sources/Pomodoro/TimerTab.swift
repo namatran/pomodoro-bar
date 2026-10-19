@@ -53,6 +53,11 @@ struct TimerTab: View {
         .onChange(of: editing) {
             if !editing { draft = nil }
         }
+        // A typed time belongs to the mode it was typed in.
+        .onChange(of: timer.phase) {
+            draft = nil
+            editing = false
+        }
     }
 
     /// hh:mm:ss, dropping empty leading groups (`25:00`, `45`) except while typing, which shows all six
