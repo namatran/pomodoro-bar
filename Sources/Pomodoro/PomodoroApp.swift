@@ -57,6 +57,7 @@ struct PomodoroApp: App {
             ContentView()
                 .environmentObject(appDelegate.timer)
                 .environmentObject(appDelegate)
+                .environmentObject(appDelegate.uploader)
         } label: {
             MenuBarLabel(timer: appDelegate.timer)
         }
