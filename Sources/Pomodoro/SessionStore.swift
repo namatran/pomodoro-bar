@@ -9,6 +9,8 @@ final class SessionStore: ObservableObject {
     private static let file = folder.appendingPathComponent("sessions.json")
 
     @Published private(set) var sessions: [Session] = []
+    /// Called after a row is deleted in Today, so the site can delete it too.
+    var onDelete: @MainActor (UUID) -> Void = { _ in }
     /// Off if an unreadable file couldn't be moved aside, so saving doesn't overwrite it.
     private var canSave = true
 
@@ -33,6 +35,7 @@ final class SessionStore: ObservableObject {
     func delete(_ id: UUID) {
         sessions.removeAll { $0.id == id }
         save()
+        onDelete(id)
     }
 
     private func load() {

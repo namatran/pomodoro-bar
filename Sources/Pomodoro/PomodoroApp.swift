@@ -9,13 +9,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     lazy var timer = PomodoroTimer()
     let stopwatch = Stopwatch()
     let sessions = SessionStore()
+    lazy var uploader = Uploader(sessions: sessions)
     /// Remembered across launches, like the pet's position.
     @Published private(set) var isPetVisible = UserDefaults.standard.object(forKey: AppDelegate.petVisibleKey) as? Bool ?? true
     private var pet: PetController?
     private var hotKey: HotKey?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        timer.onSessionSaved = { [sessions] in sessions.add($0) }
+        timer.onSessionSaved = { [sessions, uploader] in
+            sessions.add($0)
+            uploader.send()
+        }
+        sessions.onDelete = { [uploader] in uploader.delete($0) }
+        // Whatever didn't go last time, including a session saved at Quit.
+        uploader.send()
         pet = PetController(timer: timer, stopwatch: stopwatch, sessions: sessions, visible: isPetVisible)
         pet?.onHide = { [weak self] in self?.togglePet() }
         // claudepet already has ⌃⌥⌘P and cost has ⌃⌥⌘I.
