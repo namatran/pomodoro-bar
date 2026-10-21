@@ -68,7 +68,8 @@ final class SessionStore: ObservableObject {
         }
     }
 
-    private static let encoder: JSONEncoder = {
+    /// Uploads use it too, so the site gets the same JSON as the file.
+    static let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = .prettyPrinted
