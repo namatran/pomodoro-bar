@@ -10,7 +10,7 @@ A focus timer with a desktop pet, for macOS. A small tomato floats on screen and
   - **Today:** today's sessions and focus total. Click a row and press ⌫ to delete it.
 - **Recording:** Reset saves any run of 60 seconds or more, focus or break, finished or not. Quit saves an unsaved run too. Sessions are kept in `~/Library/Application Support/Pomodoro/sessions.json`.
 - **Upload:** with a site URL and token set in the dropdown, every saved session is sent to the [pomodoro-web](../pomodoro-web) site, and a row deleted in Today is deleted there too. Anything that fails waits and goes after the next save or at the next launch.
-- **Alarm:** at zero the clock holds, beeps repeat, and a bubble beside the pet offers **Stop**. Clicking the pet also stops it, and it stops on its own after 60 seconds.
+- **Alarm:** at zero the clock holds, beeps repeat, and a bubble beside the pet offers **Stop**. Clicking the pet also stops it, and it stops on its own after 60 seconds. Until **Reset** saves the run, the clock is red, the menu bar shows 🔴, and the pet wears a red dot.
 - **Right-click menu:** focus and break lengths, pet size, hide pet, reset position, reload sprites, quit.
 - **⌃⌥⌘T** shows or hides the pet.
 - **Menu bar:** the mode's emoji and time (🔔 while ringing), with Show/Hide pet, focus and break steppers, the upload fields and their status, and Quit.

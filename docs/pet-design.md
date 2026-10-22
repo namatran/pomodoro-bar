@@ -70,6 +70,7 @@ The app started as a Pomodoro timer and is now closer to a **focus tracker with 
 ### When the clock hits zero
 - The alarm rings, the display holds at `00:00:00`, and the sprite celebrates (after focus) or shows the break face (after a break).
 - A bubble appears beside the pet on the side with room, saying something like "Focus done! Break next", with a **Stop** button. Clicking the pet while it rings also stops the alarm instead of opening the popout. Neither one records anything. The alarm still stops itself after 60 seconds.
+- Until Reset saves the run, it's flagged in red (added 2026-10-22): the popout's clock turns red with a "Reset to save" hint, the menu bar title shows 🔴 in place of the mode's emoji, and the pet gets a red dot. A run under 60 seconds isn't flagged, because Reset won't save it.
 
 ### Reset and recording
 - **Reset** saves the run if it has at least 60 seconds counted down (not counting pauses), whether or not it reached zero. Anything shorter is thrown away.
