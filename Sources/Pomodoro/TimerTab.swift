@@ -33,7 +33,7 @@ struct TimerTab: View {
 
             Text(hint)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(showsUnsaved ? Color.red : Color.secondary)
 
             HStack {
                 Button(timer.isRunning ? "Pause" : "Start") {
@@ -80,8 +80,11 @@ struct TimerTab: View {
             }
         }
         .font(.system(size: 34, weight: .semibold, design: .monospaced))
-        .foregroundStyle(draft == nil ? Color.primary : Color.secondary)
+        .foregroundStyle(draft != nil ? Color.secondary : showsUnsaved ? Color.red : Color.primary)
     }
+
+    /// Red clock and "Reset to save" until Reset saves a finished run, unless a new time is being typed.
+    private var showsUnsaved: Bool { timer.hasUnsavedRun && draft == nil }
 
     /// Like Google, the clock shrinks as it counts down: hours go below an hour, minutes below a minute.
     private var firstShownDigit: Int {
@@ -92,6 +95,7 @@ struct TimerTab: View {
 
     private var hint: String {
         if draft != nil { return "Enter to start · Esc to cancel" }
+        if showsUnsaved { return "Reset to save" }
         guard hovering else { return " " }
         if timer.isRunning { return "Click to pause" }
         return timer.hasStarted ? "Click to type a time · ends this run" : "Click to type a time"

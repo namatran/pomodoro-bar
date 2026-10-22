@@ -35,6 +35,9 @@ final class PomodoroTimer: ObservableObject {
     /// Fresh or just reset: the mode can change and settings apply.
     var isFresh: Bool { !hasStarted }
 
+    /// The clock reached zero on a run long enough to save, and Reset hasn't saved it yet.
+    var hasUnsavedRun: Bool { isFinished && countedSeconds >= Self.minimumSessionSeconds }
+
     /// A new time can be typed whenever the clock isn't running.
     var canType: Bool { !isRunning }
 
