@@ -70,6 +70,9 @@ struct MenuBarLabel: View {
     @ObservedObject var timer: PomodoroTimer
 
     var body: some View {
-        Text(timer.isAlarming ? "🔔" : "\(timer.phase.emoji) \(timer.remaining.clock)")
+        Text(timer.isAlarming ? "🔔" : "\(emoji) \(timer.remaining.clock)")
     }
+
+    /// 🔴 after the alarm until Reset saves the run.
+    private var emoji: String { timer.hasUnsavedRun ? "🔴" : timer.phase.emoji }
 }
