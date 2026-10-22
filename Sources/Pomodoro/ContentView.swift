@@ -42,5 +42,7 @@ struct ContentView: View {
         }
         .padding()
         .frame(width: 240)
+        // In case the pause after typing didn't send.
+        .onDisappear { uploader.send() }
     }
 }
