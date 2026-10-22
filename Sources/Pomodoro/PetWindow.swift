@@ -284,6 +284,15 @@ struct PetView: View {
             }
         }
         .frame(width: size.width, height: size.width)
+        // A red dot until Reset saves a finished run.
+        .overlay(alignment: .topTrailing) {
+            if timer.hasUnsavedRun {
+                Circle()
+                    .fill(.red)
+                    .overlay(Circle().stroke(.white, lineWidth: 1.5))
+                    .frame(width: size.width * 0.2, height: size.width * 0.2)
+            }
+        }
         .offset(y: up ? -PetController.bob : PetController.bob)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
