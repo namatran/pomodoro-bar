@@ -107,10 +107,6 @@ final class PetController {
         }
     }
 
-    func openPopout() {
-        popout.open(anchor: panel.frame)
-    }
-
     private func placeBubble() {
         bubble.place(pet: panel.frame, popout: popout.openFrame)
     }

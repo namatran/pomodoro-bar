@@ -25,6 +25,13 @@ final class SessionStore: ObservableObject {
     /// Sessions that ended today in the local time zone, oldest first.
     var today: [Session] { sessions.filter { Calendar.current.isDateInToday($0.end) } }
 
+    /// Every session grouped by the local day it ended, newest day first, each day oldest first.
+    var byDay: [(day: Date, sessions: [Session])] {
+        Dictionary(grouping: sessions) { Calendar.current.startOfDay(for: $0.end) }
+            .map { (day: $0.key, sessions: $0.value.sorted { $0.end < $1.end }) }
+            .sorted { $0.day > $1.day }
+    }
+
     func add(_ session: Session) {
         sessions.append(session)
         save()

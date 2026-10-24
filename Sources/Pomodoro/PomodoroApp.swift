@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     let sessions = SessionStore()
     /// Remembered across launches, like the pet's position.
     @Published private(set) var isPetVisible = UserDefaults.standard.object(forKey: AppDelegate.petVisibleKey) as? Bool ?? true
+    private lazy var appWindow = AppWindowController(sessions: sessions)
     private var pet: PetController?
     private var hotKey: HotKey?
 
@@ -28,11 +29,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         }
     }
 
-    /// Opening the app while it runs, say from Spotlight, brings out the pet with its popout.
+    /// Opening the app while it runs, say from Spotlight, brings out the pet and the window.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if !isPetVisible { togglePet() }
-        pet?.openPopout()
+        openWindow()
         return false
+    }
+
+    func openWindow() {
+        appWindow.show()
     }
 
     func togglePet() {
