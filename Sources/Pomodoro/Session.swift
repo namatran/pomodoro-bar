@@ -20,4 +20,10 @@ struct Session: Identifiable, Equatable, Codable {
 
     /// Where the row's time range ends: the save for focus, the finish for a break.
     var end: Date { endedAt ?? completedAt ?? startedAt }
+
+    /// Time spent paused, which the duration leaves out. Waiting at zero for Reset isn't a pause, and under a minute doesn't count.
+    var pausedSeconds: Int {
+        let paused = Int((completedAt ?? end).timeIntervalSince(startedAt)) - durationSeconds
+        return paused >= 60 ? paused : 0
+    }
 }

@@ -35,7 +35,7 @@ final class AppWindowController: NSObject, NSWindowDelegate {
     }
 }
 
-/// Every day's sessions, newest day first, each with its focus total. Click a row for its ⌫ button; the ⌫ key works too.
+/// The last focus session, then every day's sessions, newest day first, each with its focus total. Click a row for its ⌫ button; the ⌫ key works too.
 struct AppWindowView: View {
     @ObservedObject var sessions: SessionStore
 
@@ -46,6 +46,9 @@ struct AppWindowView: View {
         let days = sessions.byDay
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 20) {
+                if let last = sessions.sessions.filter({ $0.kind == .focus }).max(by: { $0.end < $1.end }) {
+                    LastSessionCard(session: last)
+                }
                 if days.isEmpty {
                     Text("No sessions yet")
                         .foregroundStyle(.secondary)
@@ -103,5 +106,50 @@ struct AppWindowView: View {
         return calendar.isDate(day, equalTo: .now, toGranularity: .year)
             ? day.formatted(format)
             : day.formatted(format.year())
+    }
+}
+
+/// The last focus run's start, end and focus time, like the site's Last session card.
+struct LastSessionCard: View {
+    let session: Session
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Last session")
+                .font(.title2.bold())
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top) {
+                    figure("Start", session.startedAt.formatted(date: .omitted, time: .shortened))
+                    figure("End", session.end.formatted(date: .omitted, time: .shortened))
+                    figure("Focus", SessionRow.length(session.durationSeconds))
+                }
+                Divider()
+                Text(dayLine)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(16)
+            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.quaternary))
+        }
+    }
+
+    /// "Friday 23 October · Stopped early · Paused 4m, not counted as focus"
+    private var dayLine: String {
+        var parts = [session.end.formatted(.dateTime.weekday(.wide).day().month(.wide))]
+        if session.completedAt == nil { parts.append("Stopped early") }
+        if session.pausedSeconds > 0 { parts.append("Paused \(SessionRow.length(session.pausedSeconds)), not counted as focus") }
+        return parts.joined(separator: " · ")
+    }
+
+    private func figure(_ label: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.title3.weight(.semibold))
+                .monospacedDigit()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
