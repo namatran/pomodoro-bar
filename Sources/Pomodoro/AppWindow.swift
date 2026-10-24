@@ -50,7 +50,7 @@ struct AppWindowView: View {
     var body: some View {
         let days = sessions.byDay
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 40) {
                 // The pet's own timer, so the two always agree.
                 TimerTab(timer: timer, clockSize: 56, glass: true)
                     .frame(maxWidth: 360)
@@ -65,23 +65,9 @@ struct AppWindowView: View {
                     Text("No sessions yet")
                         .foregroundStyle(.secondary)
                 }
-                ForEach(days, id: \.day) { day in
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text(Self.title(day.day))
-                                .font(.headline)
-                            Spacer()
-                            Text(SessionRow.focusSummary(day.sessions))
-                                .monospacedDigit()
-                                .foregroundStyle(.secondary)
-                        }
-                        ForEach(day.sessions.reversed()) { session in
-                            SessionRow(session: session, isSelected: selected == session.id) { delete(session.id) }
-                                .onTapGesture {
-                                    selected = selected == session.id ? nil : session.id
-                                    focused = true
-                                }
-                        }
+                LazyVStack(spacing: 14) {
+                    ForEach(days, id: \.day) { day in
+                        DayCard(day: day.day, sessions: day.sessions, selected: selected, onSelect: select, onDelete: delete)
                     }
                 }
             }
@@ -113,20 +99,14 @@ struct AppWindowView: View {
         }
     }
 
+    private func select(_ id: UUID) {
+        selected = selected == id ? nil : id
+        focused = true
+    }
+
     private func delete(_ id: UUID) {
         sessions.delete(id)
         selected = nil
-    }
-
-    /// "Today", "Yesterday", "Thursday 22 October", with the year only when it isn't this one.
-    private static func title(_ day: Date) -> String {
-        let calendar = Calendar.current
-        if calendar.isDateInToday(day) { return "Today" }
-        if calendar.isDateInYesterday(day) { return "Yesterday" }
-        let format = Date.FormatStyle.dateTime.weekday(.wide).day().month(.wide)
-        return calendar.isDate(day, equalTo: .now, toGranularity: .year)
-            ? day.formatted(format)
-            : day.formatted(format.year())
     }
 }
 
