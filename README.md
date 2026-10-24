@@ -7,13 +7,14 @@ A focus timer with a desktop pet, for macOS. A small tomato floats on screen and
 - **Popout:** click the pet for a frosted panel with three tabs:
   - **Timer:** Focus | Break modes, Start/Pause and Reset, like Google's timer. Click the clock to type a time; click a running clock to pause it first.
   - **Stopwatch:** counts hundredths, like Google's stopwatch.
-  - **Today:** today's sessions and focus total. Click a row and press ⌫ to delete it.
+  - **Today:** today's sessions and focus total. Click a row and press ⌫ to delete it. **See all** opens the window.
+- **Window:** the last focus session (start, end, focus time, and any pause), then every day's sessions with each day's focus total. Delete rows the same way as in Today. While it's open, Pomodoro shows in the Dock and ⌘Tab; close it and the app goes back to the menu bar only. Open it from Spotlight, **Open Pomodoro** in the menu bar dropdown or the pet's right-click menu, or Today's **See all**.
 - **Recording:** Reset saves any run of 60 seconds or more, focus or break, finished or not. Quit saves an unsaved run too. Sessions are kept in `~/Library/Application Support/Pomodoro/sessions.json`.
 - **Alarm:** at zero the clock holds, beeps repeat, and a bubble beside the pet offers **Stop**. Clicking the pet also stops it, and it stops on its own after 60 seconds. Until **Reset** saves the run, the clock is red, the menu bar shows 🔴, and the pet wears a red dot.
-- **Right-click menu:** focus and break lengths, pet size, hide pet, reset position, reload sprites, quit.
+- **Right-click menu:** open Pomodoro, focus and break lengths, pet size, hide pet, reset position, reload sprites, quit.
 - **⌃⌥⌘T** shows or hides the pet.
-- **Opening it again**, say from Spotlight, shows the pet and opens its popout.
-- **Menu bar:** the mode's emoji and time (🔔 while ringing), with Show/Hide pet, focus and break steppers, Open at login, and Quit.
+- **Opening it again**, say from Spotlight, shows the pet if it's hidden and opens the window.
+- **Menu bar:** the mode's emoji and time (🔔 while ringing), with Open Pomodoro, Show/Hide pet, focus and break steppers, Open at login, and Quit.
 - **Your own sprites:** drop `idle.png`, `focus.png`, `break.png`, `celebrate.png` or a shared `pet.png` into `~/Library/Application Support/Pomodoro/sprites/`, then choose **Reload sprites**.
 
 See [docs/pet-design.md](docs/pet-design.md) for the full design.
@@ -58,6 +59,8 @@ Sources/Pomodoro/
   TimerTab.swift       Focus | Break clock and Google-style editing
   Stopwatch.swift      stopwatch model and tab
   TodayTab.swift       today's sessions
+  SessionRow.swift     one session row, shared by Today and the window
+  AppWindow.swift      the app window: last session and every day
   Bubble.swift         the alarm bubble
   Placement.swift      positions panels beside the pet
   HotKey.swift         the ⌃⌥⌘T global shortcut

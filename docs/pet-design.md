@@ -159,7 +159,10 @@ Settled on 2026-10-24, for the third round. The app becomes something you open f
 Third round build order:
 1. Icon, opening from Spotlight, install to `/Applications`, open at login. Built.
 2. Remove uploading. Built. The stored URL, token and send queues are cleared from UserDefaults at launch.
-3. The window: opened from all four places, the Dock while open, last session, every day, delete.
+3. The window: opened from all four places, the Dock while open, last session, every day, delete. Built, in plain native styling until stage 4. Details settled while building it:
+   - The last session is the latest focus run, as on the site, with Start, End and Focus, then a day line that adds "Stopped early" and any pause of a minute or more.
+   - Day headings are "Today", "Yesterday", then the weekday and date, with the year only for past years.
+   - The window remembers its size and position. It's an AppKit window, like the pet, so the pet and popout still float above it.
 4. The timer in the window, and the glass look.
 
 ## Build order
