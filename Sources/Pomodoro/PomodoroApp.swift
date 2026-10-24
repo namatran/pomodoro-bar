@@ -47,6 +47,7 @@ struct PomodoroApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     init() {
+        AppIcon.renderIfAsked()
         Settings.registerDefaults()
         Notifier.requestAuthorization()
         NSApplication.shared.setActivationPolicy(.accessory)
