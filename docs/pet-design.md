@@ -163,7 +163,12 @@ Third round build order:
    - The last session is the latest focus run, as on the site, with Start, End and Focus, then a day line that adds "Stopped early" and any pause of a minute or more.
    - Day headings are "Today", "Yesterday", then the weekday and date, with the year only for past years.
    - The window remembers its size and position. It's an AppKit window, like the pet, so the pet and popout still float above it.
-4. The timer in the window, and the glass look.
+4. The timer in the window, and the glass look. Built. Details settled while building it:
+   - The window's timer is the popout's Timer tab with a 56pt clock, on a glass card, with the site's pill buttons (solid ink for Start/Pause, the chip fill for Reset), since macOS's own prominent button can't do the light pill of dark mode.
+   - The site's tokens live in `Glass.swift`, with the dark versions picked by the window's appearance. Panes are a tinted fill with a bright edge and a soft shadow, without blur: the glow behind is soft enough that a blur wouldn't show. With Reduce transparency on, panes go nearly opaque.
+   - Day cards, the Last session card and the empty state follow the site's layout and wording ("Today, Sat", "25 min", "ended 12 min ago"). Day rows drop the Today tab's ☕, as the site has no emoji; breaks get a "break" chip instead.
+   - Poor Story isn't bundled, so the bubble uses SF Pro Rounded, the site's own fallback.
+   - The window is at least 440 × 480, so the day tables' fixed columns fit.
 
 ## Build order
 All stages of the first round are built:
