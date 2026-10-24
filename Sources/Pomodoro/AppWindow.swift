@@ -19,7 +19,7 @@ final class AppWindowController: NSObject, NSWindowDelegate {
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.isReleasedWhenClosed = false
-        window.contentMinSize = NSSize(width: 340, height: 360)
+        window.contentMinSize = NSSize(width: 440, height: 480)
         window.contentView = NSHostingView(rootView: AppWindowView(timer: timer, sessions: sessions))
         window.center()
         // Restores the last size and position, if there is one.
