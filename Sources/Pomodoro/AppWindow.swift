@@ -62,8 +62,7 @@ struct AppWindowView: View {
                     LastSessionCard(session: last)
                 }
                 if days.isEmpty {
-                    Text("No sessions yet")
-                        .foregroundStyle(.secondary)
+                    EmptyHistory()
                 }
                 LazyVStack(spacing: 14) {
                     ForEach(days, id: \.day) { day in
@@ -107,6 +106,34 @@ struct AppWindowView: View {
     private func delete(_ id: UUID) {
         sessions.delete(id)
         selected = nil
+    }
+}
+
+/// The site's empty state: the tomato says it's ready, over a short line on how sessions get here.
+struct EmptyHistory: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(alignment: .center, spacing: 6) {
+                TomatoView(state: .idle)
+                    .frame(width: 84, height: 84)
+                SpeechBubble(text: "ready when you are", tail: .left)
+                    .padding(.bottom, 26)
+            }
+            Text("No sessions yet")
+                .font(.system(size: 22, weight: .bold))
+                .padding(.top, 18)
+            Text("Focus for a minute or more, then press Reset, and the session shows up here.")
+                .font(.system(size: 15))
+                .foregroundStyle(Glass.inkSoft)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 360)
+                .padding(.top, 8)
+        }
+        .padding(.horizontal, 32)
+        .padding(.top, 36)
+        .padding(.bottom, 32)
+        .frame(maxWidth: .infinity)
+        .glassPane()
     }
 }
 
