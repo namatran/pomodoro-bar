@@ -10,6 +10,7 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 12) {
+            Button("Open Pomodoro") { app.openWindow() }
             HStack {
                 Button(app.isPetVisible ? "Hide pet" : "Show pet") { app.togglePet() }
                 Text("⌃⌥⌘T")

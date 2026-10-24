@@ -36,6 +36,8 @@ final class PopoutController {
 
     /// Called after it opens, closes or moves, so the bubble can make way.
     var onLayout: () -> Void = {}
+    /// Today's See all, which opens the app window.
+    var onSeeAll: () -> Void = {}
 
     init(timer: PomodoroTimer, stopwatch: Stopwatch, sessions: SessionStore) {
         panel = PopoutPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
@@ -45,7 +47,7 @@ final class PopoutController {
         panel.level = NSWindow.Level(rawValue: NSWindow.Level.floating.rawValue + 1)
         panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
         panel.hidesOnDeactivate = false
-        panel.contentView = FirstMouseHostingView(rootView: PopoutView(timer: timer, stopwatch: stopwatch, sessions: sessions, onClose: { [weak self] in self?.close() }))
+        panel.contentView = FirstMouseHostingView(rootView: PopoutView(timer: timer, stopwatch: stopwatch, sessions: sessions, onClose: { [weak self] in self?.close() }, onSeeAll: { [weak self] in self?.onSeeAll() }))
 
         // The content's height changes with it, so re-centre on the pet.
         resizeObserver = NotificationCenter.default.addObserver(forName: NSWindow.didResizeNotification, object: panel, queue: .main) { [weak self] _ in
@@ -99,6 +101,7 @@ struct PopoutView: View {
     @ObservedObject var stopwatch: Stopwatch
     @ObservedObject var sessions: SessionStore
     let onClose: () -> Void
+    let onSeeAll: () -> Void
 
     @State private var tab = PopoutTab.timer
 
@@ -117,7 +120,7 @@ struct PopoutView: View {
             switch tab {
             case .timer: TimerTab(timer: timer)
             case .stopwatch: StopwatchTab(stopwatch: stopwatch)
-            case .today: TodayTab(sessions: sessions)
+            case .today: TodayTab(sessions: sessions, onSeeAll: onSeeAll)
             }
         }
         .padding(14)

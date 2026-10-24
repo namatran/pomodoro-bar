@@ -1,8 +1,10 @@
 import SwiftUI
 
 /// Focus count and total, then the sessions newest first, with breaks dimmer. Click a row for its ⌫ button; the ⌫ key works too.
+/// See all opens every day in the app window.
 struct TodayTab: View {
     @ObservedObject var sessions: SessionStore
+    let onSeeAll: () -> Void
 
     @State private var selected: UUID?
     @FocusState private var focused: Bool
@@ -23,6 +25,9 @@ struct TodayTab: View {
                         focused = true
                     }
             }
+            Button("See all", action: onSeeAll)
+                .buttonStyle(.link)
+                .padding(.top, 2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())

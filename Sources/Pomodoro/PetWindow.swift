@@ -37,6 +37,10 @@ final class PetController {
 
     /// The right-click menu's Hide pet; the app delegate owns visibility.
     var onHide: () -> Void = {}
+    /// Open Pomodoro in the right-click menu, and Today's See all.
+    var onOpenWindow: () -> Void = {} {
+        didSet { popout.onSeeAll = onOpenWindow }
+    }
 
     init(timer: PomodoroTimer, stopwatch: Stopwatch, sessions: SessionStore, visible: Bool) {
         let size = Self.panelSize(PetSize.saved)
@@ -141,6 +145,8 @@ final class PetController {
     /// Built on each right-click so the checkmarks are current.
     private func makeMenu() -> NSMenu {
         let menu = NSMenu()
+        menu.addItem(MenuItem("Open Pomodoro") { [weak self] in self?.onOpenWindow() })
+        menu.addItem(.separator())
         menu.addItem(lengthMenu("Focus length", key: Settings.workKey, choices: [15, 20, 25, 30, 45, 50, 60]))
         menu.addItem(lengthMenu("Break length", key: Settings.breakKey, choices: [5, 10, 15, 20]))
         let current = PetSize.saved
