@@ -143,6 +143,25 @@ See `~/dev/pomodoro-web/docs/design.md`. It needs these changes:
 
 A visual redesign of the site is a separate future task.
 
+## A real app, with a window
+Settled on 2026-10-24, for the third round. The app becomes something you open from Spotlight (or Raycast), and its history moves out of the website and into the app.
+- **Opening it:** opening Pomodoro while it runs shows the pet if it's hidden and opens the app window.
+- **Dock:** still menu-bar only. While the window is open, the app shows in the Dock and ⌘Tab, so the window can't get lost behind others, and it leaves again when the window closes.
+- **The window:** a Focus | Break timer (the same timer as the pet's, so they always agree), the last session up top, then every day's sessions with each day's focus total. A row is deleted as in Today: select it and press ⌫.
+- **Opened from:** Spotlight, the pet's right-click menu, the menu bar dropdown, and a "See all" link at the bottom of the Today tab.
+- **Look:** the glass design from the website's redesign (`~/dev/pomodoro-web/DESIGN.md`), ported to SwiftUI.
+- **Icon:** the drawn tomato, rendered from `TomatoView` when the app is bundled, so the icon always matches the pet.
+- **Install:** `build_app.sh` quits the running copy and installs the new build into `/Applications`, so Spotlight always opens the latest one.
+- **Open at login:** a switch in the menu bar dropdown, using `SMAppService`, in place of adding it by hand in System Settings.
+- **Website:** retired. The upload code, the site and token fields and the upload docs leave the app. The deployed site and its Supabase data are left as they are, to take down by hand. Since each Mac keeps its own `sessions.json`, friends can use the app without accounts.
+- **Sharing:** the app stays ad-hoc signed for now. A paid Apple Developer account, for notarizing, waits until it's ready to share.
+
+Third round build order:
+1. Icon, opening from Spotlight, install to `/Applications`, open at login.
+2. Remove uploading.
+3. The window: opened from all four places, the Dock while open, last session, every day, delete.
+4. The timer in the window, and the glass look.
+
 ## Build order
 All stages of the first round are built:
 1. Stage 1 and stage 2: pet window, sprites, popout, Google-style rules, Stopwatch, Today.
