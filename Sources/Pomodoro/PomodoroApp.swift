@@ -11,7 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     let sessions = SessionStore()
     /// Remembered across launches, like the pet's position.
     @Published private(set) var isPetVisible = UserDefaults.standard.object(forKey: AppDelegate.petVisibleKey) as? Bool ?? true
-    private lazy var appWindow = AppWindowController(sessions: sessions)
+    private lazy var appWindow = AppWindowController(timer: timer, sessions: sessions)
     private var pet: PetController?
     private var hotKey: HotKey?
 

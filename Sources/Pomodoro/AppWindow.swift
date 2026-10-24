@@ -6,7 +6,7 @@ import SwiftUI
 final class AppWindowController: NSObject, NSWindowDelegate {
     private let window: NSWindow
 
-    init(sessions: SessionStore) {
+    init(timer: PomodoroTimer, sessions: SessionStore) {
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 420, height: 560),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
@@ -17,7 +17,7 @@ final class AppWindowController: NSObject, NSWindowDelegate {
         window.title = "Pomodoro"
         window.isReleasedWhenClosed = false
         window.contentMinSize = NSSize(width: 340, height: 360)
-        window.contentView = NSHostingView(rootView: AppWindowView(sessions: sessions))
+        window.contentView = NSHostingView(rootView: AppWindowView(timer: timer, sessions: sessions))
         window.center()
         // Restores the last size and position, if there is one.
         window.setFrameAutosaveName("AppWindow")
@@ -35,8 +35,10 @@ final class AppWindowController: NSObject, NSWindowDelegate {
     }
 }
 
-/// The last focus session, then every day's sessions, newest day first, each with its focus total. Click a row for its ⌫ button; the ⌫ key works too.
+/// The timer, the last focus session, then every day's sessions, newest day first, each with its focus total.
+/// Click a row for its ⌫ button; the ⌫ key works too.
 struct AppWindowView: View {
+    @ObservedObject var timer: PomodoroTimer
     @ObservedObject var sessions: SessionStore
 
     @State private var selected: UUID?
@@ -46,6 +48,9 @@ struct AppWindowView: View {
         let days = sessions.byDay
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 20) {
+                // The pet's own timer, so the two always agree.
+                TimerTab(timer: timer, clockSize: 56)
+                    .frame(maxWidth: .infinity)
                 if let last = sessions.sessions.filter({ $0.kind == .focus }).max(by: { $0.end < $1.end }) {
                     LastSessionCard(session: last)
                 }

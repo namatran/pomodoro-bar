@@ -5,6 +5,8 @@ import SwiftUI
 /// digits insert at the caret and push the leftmost one off.
 struct TimerTab: View {
     @ObservedObject var timer: PomodoroTimer
+    /// The popout's size by default; the window's is bigger.
+    var clockSize: CGFloat = 34
 
     /// hh:mm:ss as six digits while editing; nil otherwise.
     @State private var draft: [Int]?
@@ -71,15 +73,15 @@ struct TimerTab: View {
                 }
                 Text("\(digits[i])")
                     .overlay(alignment: .leading) {
-                        if draft != nil && caret == 0 && i == 0 { BlinkingCaret().offset(x: -2) }
+                        if draft != nil && caret == 0 && i == 0 { BlinkingCaret(height: clockSize * 0.88).offset(x: -2) }
                     }
                     .overlay(alignment: .trailing) {
-                        if draft != nil && caret == i + 1 { BlinkingCaret().offset(x: 1) }
+                        if draft != nil && caret == i + 1 { BlinkingCaret(height: clockSize * 0.88).offset(x: 1) }
                     }
                     .onTapGesture { beginEditing(caret: i + 1) }
             }
         }
-        .font(.system(size: 34, weight: .semibold, design: .monospaced))
+        .font(.system(size: clockSize, weight: .semibold, design: .monospaced))
         .foregroundStyle(draft != nil ? Color.secondary : showsUnsaved ? Color.red : Color.primary)
     }
 
@@ -176,11 +178,13 @@ struct TimerTab: View {
 
 /// A text-field-style caret that blinks while typing, like Google's timer.
 private struct BlinkingCaret: View {
+    let height: CGFloat
+
     var body: some View {
         TimelineView(.periodic(from: .now, by: 0.5)) { context in
             Rectangle()
                 .fill(Color.primary)
-                .frame(width: 2, height: 30)
+                .frame(width: 2, height: height)
                 .opacity(Int(context.date.timeIntervalSinceReferenceDate * 2) % 2 == 0 ? 1 : 0)
         }
     }
