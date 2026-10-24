@@ -52,8 +52,12 @@ struct AppWindowView: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 20) {
                 // The pet's own timer, so the two always agree.
-                TimerTab(timer: timer, clockSize: 56)
+                TimerTab(timer: timer, clockSize: 56, glass: true)
+                    .frame(maxWidth: 360)
+                    .padding(.vertical, 24)
+                    .padding(.horizontal, 20)
                     .frame(maxWidth: .infinity)
+                    .glassPane()
                 if let last = sessions.sessions.filter({ $0.kind == .focus }).max(by: { $0.end < $1.end }) {
                     LastSessionCard(session: last)
                 }

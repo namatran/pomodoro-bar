@@ -7,6 +7,8 @@ struct TimerTab: View {
     @ObservedObject var timer: PomodoroTimer
     /// The popout's size by default; the window's is bigger.
     var clockSize: CGFloat = 34
+    /// The window's pill buttons in place of the native ones.
+    var glass = false
 
     /// hh:mm:ss as six digits while editing; nil otherwise.
     @State private var draft: [Int]?
@@ -47,9 +49,10 @@ struct TimerTab: View {
                         timer.start()
                     }
                 }
-                .buttonStyle(.borderedProminent)
+                .timerButton(prominent: true, glass: glass)
                 .disabled(timer.isFinished && draft == nil)
                 Button("Reset") { timer.reset() }
+                    .timerButton(prominent: false, glass: glass)
             }
         }
         .onChange(of: editing) {
@@ -173,6 +176,20 @@ struct TimerTab: View {
     /// Like Google, 90 in the seconds place means 90 seconds rather than being rejected.
     private static func seconds(_ d: [Int]) -> Int {
         (d[0] * 10 + d[1]) * 3600 + (d[2] * 10 + d[3]) * 60 + d[4] * 10 + d[5]
+    }
+}
+
+private extension View {
+    /// Native buttons in the popout, the site's pills in the window.
+    @ViewBuilder
+    func timerButton(prominent: Bool, glass: Bool) -> some View {
+        if glass {
+            buttonStyle(PillButtonStyle(prominent: prominent))
+        } else if prominent {
+            buttonStyle(.borderedProminent)
+        } else {
+            self
+        }
     }
 }
 

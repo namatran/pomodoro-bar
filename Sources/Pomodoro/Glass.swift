@@ -97,3 +97,29 @@ struct SpeechBubble: View {
             .shadow(color: .black.opacity(0.10), radius: 7, y: 4)
     }
 }
+
+/// The site's pill buttons, 44pt tall: solid ink for the main action, the chip fill for the rest. Disabled ones fade to half.
+struct PillButtonStyle: ButtonStyle {
+    var prominent = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        Pill(configuration: configuration, prominent: prominent)
+    }
+
+    private struct Pill: View {
+        let configuration: ButtonStyleConfiguration
+        let prominent: Bool
+        @Environment(\.isEnabled) private var isEnabled
+
+        var body: some View {
+            configuration.label
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundStyle(prominent ? Glass.pillText : Glass.ink)
+                .padding(.horizontal, 18)
+                .frame(minWidth: 96, minHeight: 44)
+                .background(Capsule().fill(prominent ? Glass.pill : Glass.chip))
+                .contentShape(Capsule())
+                .opacity(isEnabled ? (configuration.isPressed ? 0.8 : 1) : 0.5)
+        }
+    }
+}
