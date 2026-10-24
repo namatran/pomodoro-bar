@@ -35,9 +35,12 @@ final class AppWindowController: NSObject, NSWindowDelegate {
     }
 }
 
-/// Every day's sessions, newest day first, each with its focus total.
+/// Every day's sessions, newest day first, each with its focus total. Click a row for its ⌫ button; the ⌫ key works too.
 struct AppWindowView: View {
     @ObservedObject var sessions: SessionStore
+
+    @State private var selected: UUID?
+    @FocusState private var focused: Bool
 
     var body: some View {
         let days = sessions.byDay
@@ -58,14 +61,37 @@ struct AppWindowView: View {
                                 .foregroundStyle(.secondary)
                         }
                         ForEach(day.sessions.reversed()) { session in
-                            SessionRow(session: session, isSelected: false) {}
+                            SessionRow(session: session, isSelected: selected == session.id) { delete(session.id) }
+                                .onTapGesture {
+                                    selected = selected == session.id ? nil : session.id
+                                    focused = true
+                                }
                         }
                     }
                 }
             }
             .padding(20)
+            .contentShape(Rectangle())
+            // A click outside the rows clears the selection.
+            .onTapGesture { selected = nil }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .focusable()
+        .focused($focused)
+        .focusEffectDisabled()
+        .onKeyPress(.delete) {
+            guard let selected else { return .ignored }
+            delete(selected)
+            return .handled
+        }
+        .onChange(of: focused) {
+            if !focused { selected = nil }
+        }
+    }
+
+    private func delete(_ id: UUID) {
+        sessions.delete(id)
+        selected = nil
     }
 
     /// "Today", "Yesterday", "Thursday 22 October", with the year only when it isn't this one.
