@@ -8,13 +8,16 @@ final class AppWindowController: NSObject, NSWindowDelegate {
 
     init(timer: PomodoroTimer, sessions: SessionStore) {
         window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 420, height: 560),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            contentRect: NSRect(x: 0, y: 0, width: 560, height: 720),
+            // The glow runs up under a see-through title bar.
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
         super.init()
         window.title = "Pomodoro"
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
         window.isReleasedWhenClosed = false
         window.contentMinSize = NSSize(width: 340, height: 360)
         window.contentView = NSHostingView(rootView: AppWindowView(timer: timer, sessions: sessions))
@@ -78,12 +81,21 @@ struct AppWindowView: View {
                     }
                 }
             }
-            .padding(20)
+            // One centred column, like the site, starting clear of the window buttons.
+            .frame(maxWidth: 720)
+            .padding(.horizontal, 20)
+            .padding(.top, 44)
+            .padding(.bottom, 48)
+            .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
             // A click outside the rows clears the selection.
             .onTapGesture { selected = nil }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(GlassGround())
+        .fontDesign(.rounded)
+        .foregroundStyle(Glass.ink)
+        .tint(Glass.tomato)
         .focusable()
         .focused($focused)
         .focusEffectDisabled()
