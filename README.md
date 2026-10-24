@@ -13,7 +13,8 @@ A focus timer with a desktop pet, for macOS. A small tomato floats on screen and
 - **Alarm:** at zero the clock holds, beeps repeat, and a bubble beside the pet offers **Stop**. Clicking the pet also stops it, and it stops on its own after 60 seconds. Until **Reset** saves the run, the clock is red, the menu bar shows 🔴, and the pet wears a red dot.
 - **Right-click menu:** focus and break lengths, pet size, hide pet, reset position, reload sprites, quit.
 - **⌃⌥⌘T** shows or hides the pet.
-- **Menu bar:** the mode's emoji and time (🔔 while ringing), with Show/Hide pet, focus and break steppers, the upload fields and their status, and Quit.
+- **Opening it again**, say from Spotlight, shows the pet and opens its popout.
+- **Menu bar:** the mode's emoji and time (🔔 while ringing), with Show/Hide pet, focus and break steppers, Open at login, the upload fields and their status, and Quit.
 - **Your own sprites:** drop `idle.png`, `focus.png`, `break.png`, `celebrate.png` or a shared `pet.png` into `~/Library/Application Support/Pomodoro/sprites/`, then choose **Reload sprites**.
 
 See [docs/pet-design.md](docs/pet-design.md) for the full design.
@@ -29,14 +30,15 @@ For development, run the bare binary:
 swift run
 ```
 
-To build the menu-bar-only app (no Dock icon) with notifications:
+To build the menu-bar-only app (no Dock icon) with notifications and the tomato icon:
 
 ```bash
 ./build_app.sh
-open Pomodoro.app
 ```
 
-To start it at login, move `Pomodoro.app` to `/Applications` and add it under System Settings → General → Login Items.
+It quits the running copy (which saves an unsaved run), installs the new build as `/Applications/Pomodoro.app`, and opens it, so Spotlight always finds the latest one. The first time, macOS asks whether your terminal may control Pomodoro; that's the quit.
+
+To start it at login, turn on **Open at login** in the menu bar dropdown.
 
 ## Notes
 - Notification banners need the app bundle. `swift run` still plays the alarm but skips the banner.
@@ -49,7 +51,8 @@ To start it at login, move `Pomodoro.app` to `/Applications` and add it under Sy
 ```
 Sources/Pomodoro/
   PomodoroApp.swift    entry point, app delegate, menu bar title
-  ContentView.swift    the menu bar dropdown
+  AppIcon.swift        the app icon, rendered from the tomato
+  ContentView.swift    the menu bar dropdown and Open at login
   PetWindow.swift      the floating pet, its sizes and right-click menu
   PetState.swift       which sprite shows, and loading custom sprites
   TomatoView.swift     the drawn placeholder tomato
@@ -67,5 +70,5 @@ Sources/Pomodoro/
   Phase.swift          modes and duration settings
   Alarm.swift          synthesized beeping alarm
   Notifier.swift       notification banners
-build_app.sh           wraps the release build in Pomodoro.app
+build_app.sh           wraps the release build in Pomodoro.app and installs it
 ```
