@@ -22,7 +22,7 @@ final class SessionStore: ObservableObject {
         }
     }
 
-    /// Sessions that ended today in the local time zone, oldest first, like the site's day groups.
+    /// Sessions that ended today in the local time zone, oldest first.
     var today: [Session] { sessions.filter { Calendar.current.isDateInToday($0.end) } }
 
     func add(_ session: Session) {

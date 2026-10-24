@@ -9,12 +9,11 @@ A focus timer with a desktop pet, for macOS. A small tomato floats on screen and
   - **Stopwatch:** counts hundredths, like Google's stopwatch.
   - **Today:** today's sessions and focus total. Click a row and press ⌫ to delete it.
 - **Recording:** Reset saves any run of 60 seconds or more, focus or break, finished or not. Quit saves an unsaved run too. Sessions are kept in `~/Library/Application Support/Pomodoro/sessions.json`.
-- **Upload:** with a site URL and token set in the dropdown, every saved session is sent to the [pomodoro-web](../pomodoro-web) site, and a row deleted in Today is deleted there too. Anything that fails waits and goes after the next save or at the next launch.
 - **Alarm:** at zero the clock holds, beeps repeat, and a bubble beside the pet offers **Stop**. Clicking the pet also stops it, and it stops on its own after 60 seconds. Until **Reset** saves the run, the clock is red, the menu bar shows 🔴, and the pet wears a red dot.
 - **Right-click menu:** focus and break lengths, pet size, hide pet, reset position, reload sprites, quit.
 - **⌃⌥⌘T** shows or hides the pet.
 - **Opening it again**, say from Spotlight, shows the pet and opens its popout.
-- **Menu bar:** the mode's emoji and time (🔔 while ringing), with Show/Hide pet, focus and break steppers, Open at login, the upload fields and their status, and Quit.
+- **Menu bar:** the mode's emoji and time (🔔 while ringing), with Show/Hide pet, focus and break steppers, Open at login, and Quit.
 - **Your own sprites:** drop `idle.png`, `focus.png`, `break.png`, `celebrate.png` or a shared `pet.png` into `~/Library/Application Support/Pomodoro/sprites/`, then choose **Reload sprites**.
 
 See [docs/pet-design.md](docs/pet-design.md) for the full design.
@@ -43,8 +42,7 @@ To start it at login, turn on **Open at login** in the menu bar dropdown.
 ## Notes
 - Notification banners need the app bundle. `swift run` still plays the alarm but skips the banner.
 - `swift run` and `Pomodoro.app` keep separate settings, because macOS stores them per bundle identifier. They share `sessions.json`, so don't run both at once, or one will overwrite the other's sessions.
-- Each build has its own site URL and token, so you enter them once in each. That lets `swift run` send to `http://localhost:3000` while `Pomodoro.app` sends to the deployed site. Each build remembers what it has sent, so the first time a build is set up, it sends everything already in `sessions.json`. The site ignores sessions it already has.
-- The upload token is the site's `UPLOAD_TOKEN`. It's stored in UserDefaults, not the Keychain, which is fine because it can only add and delete sessions, never read them.
+- Sessions used to be uploaded to the [pomodoro-web](../pomodoro-web) site. That was removed on 2026-10-24; the history now lives only in the app.
 - The app is ad-hoc signed, not notarized. It's meant for the Mac that built it; a copy downloaded on another Mac will be blocked by Gatekeeper.
 
 ## Layout
@@ -66,7 +64,6 @@ Sources/Pomodoro/
   PomodoroTimer.swift  countdown, modes, alarm state, saving runs
   Session.swift        one saved run
   SessionStore.swift   saved runs in sessions.json
-  Uploader.swift       sends sessions and deletes to the site
   Phase.swift          modes and duration settings
   Alarm.swift          synthesized beeping alarm
   Notifier.swift       notification banners

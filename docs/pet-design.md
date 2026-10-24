@@ -112,7 +112,7 @@ Settled on 2026-10-19, for the second round:
 - The old `completedByDay` counts aren't migrated. `PomodoroLog.swift` is removed, and the key is cleared from UserDefaults at launch.
 
 ## Upload
-Settled on 2026-10-21, for the second round. The site's side is in `~/dev/pomodoro-web/docs/design.md`.
+Removed on 2026-10-24 (see A real app, with a window); kept here as a record. Settled on 2026-10-21, for the second round. The site's side is in `~/dev/pomodoro-web/docs/design.md`.
 - **Settings:** the dropdown has a site URL field and a token field (hidden as you type), stored in UserDefaults, so `swift run` and `Pomodoro.app` each have their own. The URL is the site's address, such as `http://localhost:3000`; the app adds `/api/sessions` itself, and a trailing slash is fine.
 - **What's sent:** every session in `sessions.json` that hasn't been sent yet, including ones saved before the URL and token were set. The app keeps the ids it has sent in UserDefaults, so nothing needs seeding. Each session is POSTed on its own, as the same JSON as `sessions.json`.
 - **Deletes:** deleting a row in Today queues a delete for its id in UserDefaults. A delete is only ever sent for a row you deleted, never because a session is missing from the file, so an unreadable `sessions.json` can't empty the site.
@@ -121,7 +121,7 @@ Settled on 2026-10-21, for the second round. The site's side is in `~/dev/pomodo
 - **Status:** a caption under the fields says "All sent", "3 waiting", or "3 waiting · wrong token" (or "can't reach site", or the status code). Without a URL and token, it says "Not set up", with the waiting count.
 
 ## Menus
-- **Menu bar (slimmed):** the title shows the mode's emoji and time, or 🔔 while the alarm rings. The menu has Show/Hide pet, Focus and Break steppers, the upload fields and status (see Upload), and Quit. The timer controls move to the popout.
+- **Menu bar (slimmed):** the title shows the mode's emoji and time, or 🔔 while the alarm rings. The menu has Show/Hide pet, Focus and Break steppers, Open at login, and Quit. (The upload fields were removed with uploading.) The timer controls move to the popout.
 - **Pet's right-click menu** (a native menu):
   - Focus length ▸ 15/20/25/30/45/50/60
   - Break length ▸ 5/10/15/20
@@ -134,7 +134,7 @@ Settled on 2026-10-21, for the second round. The site's side is in `~/dev/pomodo
   The length submenus show the current value checked, even if it's a custom one from the stepper.
 
 ## Website
-See `~/dev/pomodoro-web/docs/design.md`. It needs these changes:
+Retired on 2026-10-24; the app no longer uploads. See `~/dev/pomodoro-web/docs/design.md`. It needs these changes:
 - Runs of at least 60s are logged whether or not they finished.
 - Rows have a `kind`, and `ended_at` is empty for breaks.
 - `completed_at` is added.
@@ -157,8 +157,8 @@ Settled on 2026-10-24, for the third round. The app becomes something you open f
 - **Sharing:** the app stays ad-hoc signed for now. A paid Apple Developer account, for notarizing, waits until it's ready to share.
 
 Third round build order:
-1. Icon, opening from Spotlight, install to `/Applications`, open at login.
-2. Remove uploading.
+1. Icon, opening from Spotlight, install to `/Applications`, open at login. Built.
+2. Remove uploading. Built. The stored URL, token and send queues are cleared from UserDefaults at launch.
 3. The window: opened from all four places, the Dock while open, last session, every day, delete.
 4. The timer in the window, and the glass look.
 
