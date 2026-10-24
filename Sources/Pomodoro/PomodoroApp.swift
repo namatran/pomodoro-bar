@@ -31,6 +31,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         }
     }
 
+    /// Opening the app while it runs, say from Spotlight, brings out the pet with its popout.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !isPetVisible { togglePet() }
+        pet?.openPopout()
+        return false
+    }
+
     func togglePet() {
         isPetVisible.toggle()
         UserDefaults.standard.set(isPetVisible, forKey: Self.petVisibleKey)
