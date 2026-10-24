@@ -5,7 +5,7 @@ SwiftUI `MenuBarExtra` app in a Swift Package (no Xcode project; Command Line To
 ## Commands
 - Build: `swift build`
 - Run: `swift run`
-- Bundle as .app (menu bar only, no Dock icon): `./build_app.sh && open Pomodoro.app`
+- Bundle as .app (menu bar only, no Dock icon), install it in /Applications and open it: `./build_app.sh`
 
 ## Workflow
 - Make small, logical commits using Conventional Commits (`type: description`, no trailing period).

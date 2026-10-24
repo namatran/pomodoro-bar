@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-# Build a release binary and wrap it in Pomodoro.app (menu bar only, no Dock icon).
+# Build a release binary, wrap it in Pomodoro.app (menu bar only, no Dock icon),
+# and install it in /Applications so Spotlight opens the latest build.
 set -euo pipefail
 cd "$(dirname "$0")"
 
 APP=Pomodoro.app
+DEST="/Applications/$APP"
+BUNDLE_ID=com.namatran.Pomodoro
 
 swift build -c release
 BIN="$(swift build -c release --show-bin-path)/Pomodoro"
@@ -55,4 +58,20 @@ PLIST
 # Ad-hoc sign so macOS will deliver notifications to the app.
 codesign --force --sign - "$APP"
 
-echo "Built $APP. Run: open $APP"
+running() {
+    osascript -e "application id \"$BUNDLE_ID\" is running" | grep -q true
+}
+
+# A real Quit, not a kill, so the running copy saves an unsaved run first.
+if running; then
+    osascript -e "tell application id \"$BUNDLE_ID\" to quit"
+    while running; do sleep 0.2; done
+fi
+
+rm -rf "$DEST"
+ditto "$APP" "$DEST"
+# Only the installed copy is kept, so Spotlight doesn't list two.
+rm -rf "$APP"
+open "$DEST"
+
+echo "Installed and opened $DEST"
