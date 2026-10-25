@@ -20,7 +20,10 @@ final class AppWindowController: NSObject, NSWindowDelegate {
         window.titlebarAppearsTransparent = true
         window.isReleasedWhenClosed = false
         window.contentMinSize = NSSize(width: 440, height: 480)
-        window.contentView = NSHostingView(rootView: AppWindowView(timer: timer, sessions: sessions))
+        window.appearance = WindowTheme.current.appearance
+        window.contentView = NSHostingView(rootView: AppWindowView(timer: timer, sessions: sessions) { [weak self] theme in
+            self?.window.appearance = theme.appearance
+        })
         window.center()
         // Restores the last size and position, if there is one.
         window.setFrameAutosaveName("AppWindow")
@@ -38,11 +41,12 @@ final class AppWindowController: NSObject, NSWindowDelegate {
     }
 }
 
-/// The timer, the last focus session, then every day's sessions, newest day first, each with its focus total.
-/// Click a row for its ⌫ button; the ⌫ key works too.
+/// The theme control, the timer, the last focus session, then every day's sessions, newest day first, each with
+/// its focus total. Click a row for its ⌫ button; the ⌫ key works too.
 struct AppWindowView: View {
     @ObservedObject var timer: PomodoroTimer
     @ObservedObject var sessions: SessionStore
+    let onTheme: (WindowTheme) -> Void
 
     @State private var selected: UUID?
     @FocusState private var focused: Bool
@@ -51,6 +55,10 @@ struct AppWindowView: View {
         let days = sessions.byDay
         ScrollView {
             VStack(alignment: .leading, spacing: 40) {
+                // Top right, level with the window buttons on the left.
+                ThemeControl(onChange: onTheme)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.bottom, -24)
                 // The pet's own timer, so the two always agree.
                 TimerTab(timer: timer, clockSize: 56, glass: true)
                     .frame(maxWidth: 360)
@@ -73,7 +81,7 @@ struct AppWindowView: View {
             // One centred column, like the site, starting clear of the window buttons.
             .frame(maxWidth: 720)
             .padding(.horizontal, 20)
-            .padding(.top, 44)
+            .padding(.top, 8)
             .padding(.bottom, 48)
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
