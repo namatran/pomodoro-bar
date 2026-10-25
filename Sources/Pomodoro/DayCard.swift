@@ -49,6 +49,7 @@ struct DayCard: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .help(isOpen ? "Click to hide this day's sessions" : "Click to show this day's sessions")
 
             if isOpen {
                 table
