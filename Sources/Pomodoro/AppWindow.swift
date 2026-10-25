@@ -24,6 +24,8 @@ final class AppWindowController: NSObject, NSWindowDelegate {
         window.contentView = NSHostingView(rootView: AppWindowView(timer: timer, sessions: sessions) { [weak self] theme in
             self?.apply(theme)
         })
+        // Layer-backed from the start, so the theme's crossfade doesn't also convert the view mid-switch.
+        window.contentView?.wantsLayer = true
         window.center()
         // Restores the last size and position, if there is one.
         window.setFrameAutosaveName("AppWindow")
@@ -39,14 +41,11 @@ final class AppWindowController: NSObject, NSWindowDelegate {
     /// Crossfades the whole window to the new look over 250ms, like the site. It's a fade with no movement,
     /// so it stays under Reduce motion too.
     private func apply(_ theme: WindowTheme) {
-        if let view = window.contentView {
-            view.wantsLayer = true
-            let fade = CATransition()
-            fade.type = .fade
-            fade.duration = 0.25
-            fade.timingFunction = CAMediaTimingFunction(name: .default)
-            view.layer?.add(fade, forKey: "theme")
-        }
+        let fade = CATransition()
+        fade.type = .fade
+        fade.duration = 0.25
+        fade.timingFunction = CAMediaTimingFunction(name: .default)
+        window.contentView?.layer?.add(fade, forKey: "theme")
         window.appearance = theme.appearance
     }
 
