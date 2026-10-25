@@ -120,6 +120,8 @@ struct DayCard: View {
         )
         .contentShape(Rectangle())
         .onTapGesture { onSelect(session.id) }
+        // Nothing else says a row can be clicked, or what a click is for.
+        .help(isSelected ? "Press ⌫ to delete, or click to deselect" : "Click to select, then press ⌫ to delete")
     }
 
     /// "Today, Sat", "Yesterday, Fri" or "Oct 14, Wed".
