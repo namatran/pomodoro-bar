@@ -59,9 +59,13 @@ struct GlassPane: ViewModifier {
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
         content
-            .background(shape.fill(reduceTransparency ? Glass.paneSolid : Glass.pane))
+            // The shadow comes from the shape alone, not the text inside, so it stays cheap while a day
+            // opens or the theme fades.
+            .background(
+                shape.fill(reduceTransparency ? Glass.paneSolid : Glass.pane)
+                    .shadow(color: Glass.paneShadow, radius: 16, y: 12)
+            )
             .overlay(shape.strokeBorder(Glass.paneEdge, lineWidth: 1))
-            .shadow(color: Glass.paneShadow, radius: 16, y: 12)
     }
 }
 
