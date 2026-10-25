@@ -49,7 +49,7 @@ struct DayCard: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .tooltip(isOpen ? "Click to hide this day's sessions" : "Click to show this day's sessions")
+            .help(isOpen ? "Click to hide this day's sessions" : "Click to show this day's sessions")
 
             if isOpen {
                 table
@@ -105,7 +105,7 @@ struct DayCard: View {
             if isSelected {
                 Button { onDelete(session.id) } label: { Image(systemName: "delete.left") }
                     .buttonStyle(.borderless)
-                    .tooltip("Delete session")
+                    .help("Delete session")
                     .padding(.leading, 10)
             }
         }
@@ -122,7 +122,7 @@ struct DayCard: View {
         .contentShape(Rectangle())
         .onTapGesture { onSelect(session.id) }
         // Nothing else says a row can be clicked, or what a click is for.
-        .tooltip(isSelected ? "Press ⌫ to delete, or click to deselect" : "Click to select, then press ⌫ to delete")
+        .help(isSelected ? "Press ⌫ to delete, or click to deselect" : "Click to select, then press ⌫ to delete")
     }
 
     /// "Today, Sat", "Yesterday, Fri" or "Oct 14, Wed".

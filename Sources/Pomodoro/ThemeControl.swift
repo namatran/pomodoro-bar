@@ -69,7 +69,7 @@ struct ThemeControl: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .tooltip(option.label)
+        .help(option.label)
         .accessibilityLabel(option.label)
         .accessibilityAddTraits(chosen ? .isSelected : [])
     }
