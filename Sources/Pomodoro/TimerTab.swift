@@ -21,12 +21,8 @@ struct TimerTab: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            Picker("Mode", selection: Binding(get: { timer.phase }, set: { timer.select($0) })) {
-                ForEach(Phase.allCases, id: \.self) { Text($0.label).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .disabled(!timer.isFresh)
+            modePicker
+                .disabled(!timer.isFresh)
 
             clock
                 .focusable()
@@ -86,6 +82,21 @@ struct TimerTab: View {
         }
         .font(.system(size: clockSize, weight: .semibold, design: .monospaced))
         .foregroundStyle(draft != nil ? Color.secondary : showsUnsaved ? Color.red : Color.primary)
+    }
+
+    /// Focus | Break: native in the popout, the site's pill picker in the window, with Focus on the tomato.
+    @ViewBuilder
+    private var modePicker: some View {
+        let phase = Binding(get: { timer.phase }, set: { timer.select($0) })
+        if glass {
+            PillPicker(selection: phase, options: Phase.allCases, label: \.label, accent: { $0 == .work })
+        } else {
+            Picker("Mode", selection: phase) {
+                ForEach(Phase.allCases, id: \.self) { Text($0.label).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+        }
     }
 
     /// Red clock and "Reset to save" until Reset saves a finished run, unless a new time is being typed.

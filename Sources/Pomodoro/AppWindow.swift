@@ -76,15 +76,15 @@ struct AppWindowView: View {
                     .padding(.bottom, -24)
                 // The pet's own timer and stopwatch, so the window and popout always agree.
                 VStack(spacing: 16) {
-                    Picker("Tab", selection: $tab) {
-                        ForEach([PopoutTab.timer, .stopwatch], id: \.self) { Text($0.rawValue).tag($0) }
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    if tab == .timer {
-                        TimerTab(timer: timer, clockSize: 56, glass: true)
-                    } else {
+                    PillPicker(
+                        selection: Binding(get: { tab == .stopwatch ? .stopwatch : .timer }, set: { tab = $0 }),
+                        options: [PopoutTab.timer, .stopwatch],
+                        label: \.rawValue
+                    )
+                    if tab == .stopwatch {
                         StopwatchTab(stopwatch: stopwatch, clockSize: 56, glass: true)
+                    } else {
+                        TimerTab(timer: timer, clockSize: 56, glass: true)
                     }
                 }
                 .frame(maxWidth: 360)

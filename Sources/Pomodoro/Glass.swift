@@ -131,3 +131,40 @@ struct PillButtonStyle: ButtonStyle {
         }
     }
 }
+
+/// The site's segmented control, like the theme control: options on a chip-coloured pill, the chosen one on the
+/// ink pill, or on the tomato where `accent` says so. A disabled one fades to half, like the pill buttons.
+struct PillPicker<Value: Hashable>: View {
+    @Binding var selection: Value
+    let options: [Value]
+    let label: (Value) -> String
+    var accent: (Value) -> Bool = { _ in false }
+    @Environment(\.isEnabled) private var isEnabled
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(options, id: \.self) { option in
+                segment(option)
+            }
+        }
+        .background(Capsule().fill(Glass.chip))
+        .opacity(isEnabled ? 1 : 0.5)
+    }
+
+    private func segment(_ option: Value) -> some View {
+        let chosen = selection == option
+        let fill = accent(option) ? Glass.tomato : Glass.pill
+        return Button {
+            selection = option
+        } label: {
+            Text(label(option))
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .foregroundStyle(chosen ? Glass.pillText : Glass.ink)
+                .frame(maxWidth: .infinity, minHeight: 36)
+                .background(Capsule().fill(chosen ? fill : Color.clear))
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(chosen ? .isSelected : [])
+    }
+}
