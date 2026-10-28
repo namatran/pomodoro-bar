@@ -42,7 +42,7 @@ The app started as a Pomodoro timer and is now closer to a **focus tracker with 
 ## Popout
 - Clicking the pet opens it beside the pet, on the side with more room, and clamped to stay on screen, as cost's board does. It stays open, follows the pet when dragged, updates live, and closes on a second click or its ✕. It doesn't close on outside clicks.
 - Look: native macOS material (frosted, following light and dark mode) with rounded corners. The alarm bubble looks the same.
-- Tabs: **Timer** (open by default), **Stopwatch**, **Today**.
+- Tabs: **Timer** (open by default), **Stopwatch**, **Today**. The tab is shared with the window and remembered, so picking Timer or Stopwatch in one switches the other.
 
 ### Timer tab
 - A segmented **Focus | Break** picker above an hh:mm:ss display. Like Google, it hides empty leading groups and shrinks as it counts down (`01:00:00` → `59:59`, `01:00` → `59`), but keeps two digits per group. While typing, all six digits show (`00:25:00`). The menu bar title keeps the shorter `25:00`.
@@ -169,7 +169,8 @@ Third round build order:
    - Day cards, the Last session card and the empty state follow the site's layout and wording ("Today, Sat", "25 min", "ended 12 min ago"). Day rows drop the Today tab's ☕, as the site has no emoji; breaks get a "break" chip instead.
    - Poor Story isn't bundled, so the bubble uses SF Pro Rounded, the site's own fallback.
    - The window is at least 440 × 480, so the day tables' fixed columns fit.
-   - The timer card has the popout's Timer | Stopwatch switch, using the pet's stopwatch, with the same 56pt clock and pill buttons.
+   - The timer card has the popout's Timer | Stopwatch switch, using the pet's stopwatch, with the same 56pt clock and pill buttons. With the popout on Today, the window shows the timer.
+   - Timer | Stopwatch and Focus | Break are pill pickers like the theme control, with Focus on the tomato. The popout keeps the native pickers.
    - The glows grow with the window, never smaller than at the default 560 × 720, so the panes stay visible in full screen.
    - The site's theme control sits at the top right, level with the window buttons: System, Light and Dark, kept in UserDefaults. It sets the window's appearance only, so the pet and popout keep following macOS.
 
