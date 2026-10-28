@@ -169,6 +169,7 @@ Third round build order:
    - Day cards, the Last session card and the empty state follow the site's layout and wording ("Today, Sat", "25 min", "ended 12 min ago"). Day rows drop the Today tab's ☕, as the site has no emoji; breaks get a "break" chip instead.
    - Poor Story isn't bundled, so the bubble uses SF Pro Rounded, the site's own fallback.
    - The window is at least 440 × 480, so the day tables' fixed columns fit.
+   - The timer card has the popout's Timer | Stopwatch switch, using the pet's stopwatch, with the same 56pt clock and pill buttons.
    - The glows grow with the window, never smaller than at the default 560 × 720, so the panes stay visible in full screen.
    - The site's theme control sits at the top right, level with the window buttons: System, Light and Dark, kept in UserDefaults. It sets the window's appearance only, so the pet and popout keep following macOS.
 
