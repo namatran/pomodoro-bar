@@ -94,6 +94,9 @@ final class PopoutController {
 
 enum PopoutTab: String, CaseIterable {
     case timer = "Timer", stopwatch = "Stopwatch", today = "Today"
+
+    /// Shared by the popout and the window, so switching to Timer or Stopwatch in one switches the other.
+    static let key = "tab"
 }
 
 struct PopoutView: View {
@@ -103,7 +106,7 @@ struct PopoutView: View {
     let onClose: () -> Void
     let onSeeAll: () -> Void
 
-    @State private var tab = PopoutTab.timer
+    @AppStorage(PopoutTab.key) private var tab = PopoutTab.timer
 
     var body: some View {
         VStack(spacing: 12) {

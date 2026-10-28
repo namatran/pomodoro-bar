@@ -62,7 +62,8 @@ struct AppWindowView: View {
     @ObservedObject var sessions: SessionStore
     let onTheme: (WindowTheme) -> Void
 
-    @State private var tab = PopoutTab.timer
+    /// The popout's tab. The window has no Today, so it shows the timer then.
+    @AppStorage(PopoutTab.key) private var tab = PopoutTab.timer
     @State private var selected: UUID?
     @FocusState private var focused: Bool
 
