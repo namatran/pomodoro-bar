@@ -41,11 +41,15 @@ enum Glass {
 /// The light everything sits in: three soft glows over the ground, gradients only.
 struct GlassGround: View {
     var body: some View {
-        ZStack {
-            Glass.ground
-            RadialGradient(colors: [Glass.glowCoral, .clear], center: .topLeading, startRadius: 0, endRadius: 520)
-            RadialGradient(colors: [Glass.glowPeach, .clear], center: .bottomTrailing, startRadius: 0, endRadius: 560)
-            RadialGradient(colors: [Glass.glowPetal, .clear], center: UnitPoint(x: 0.85, y: 0.15), startRadius: 0, endRadius: 380)
+        GeometryReader { proxy in
+            // Sized to the window, so full screen gets the same light as the default 560 × 720 window.
+            let size = max(proxy.size.width, proxy.size.height, 720)
+            ZStack {
+                Glass.ground
+                RadialGradient(colors: [Glass.glowCoral, .clear], center: .topLeading, startRadius: 0, endRadius: size * 0.72)
+                RadialGradient(colors: [Glass.glowPeach, .clear], center: .bottomTrailing, startRadius: 0, endRadius: size * 0.78)
+                RadialGradient(colors: [Glass.glowPetal, .clear], center: UnitPoint(x: 0.85, y: 0.15), startRadius: 0, endRadius: size * 0.53)
+            }
         }
         .ignoresSafeArea()
     }
