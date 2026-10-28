@@ -35,20 +35,25 @@ final class Stopwatch: ObservableObject {
 
 struct StopwatchTab: View {
     @ObservedObject var stopwatch: Stopwatch
+    /// The popout's size by default; the window's is bigger.
+    var clockSize: CGFloat = 34
+    /// The window's pill buttons in place of the native ones.
+    var glass = false
 
     var body: some View {
         VStack(spacing: 10) {
             // Redraws every frame while running, so the hundredths tick smoothly.
             TimelineView(.animation(paused: !stopwatch.isRunning)) { context in
                 Text(Self.format(stopwatch.elapsed(at: context.date)))
-                    .font(.system(size: 34, weight: .semibold, design: .monospaced))
+                    .font(.system(size: clockSize, weight: .semibold, design: .monospaced))
             }
             HStack {
                 Button(stopwatch.isRunning ? "Stop" : "Start") {
                     stopwatch.isRunning ? stopwatch.stop() : stopwatch.start()
                 }
-                .buttonStyle(.borderedProminent)
+                .timerButton(prominent: true, glass: glass)
                 Button("Reset") { stopwatch.reset() }
+                    .timerButton(prominent: false, glass: glass)
             }
         }
     }

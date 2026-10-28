@@ -179,8 +179,8 @@ struct TimerTab: View {
     }
 }
 
-private extension View {
-    /// Native buttons in the popout, the site's pills in the window.
+extension View {
+    /// Native buttons in the popout, the site's pills in the window. Shared by the Timer and Stopwatch tabs.
     @ViewBuilder
     func timerButton(prominent: Bool, glass: Bool) -> some View {
         if glass {

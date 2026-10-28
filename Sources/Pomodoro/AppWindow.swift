@@ -6,7 +6,7 @@ import SwiftUI
 final class AppWindowController: NSObject, NSWindowDelegate {
     private let window: NSWindow
 
-    init(timer: PomodoroTimer, sessions: SessionStore) {
+    init(timer: PomodoroTimer, stopwatch: Stopwatch, sessions: SessionStore) {
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 560, height: 720),
             // The glow runs up under a see-through title bar.
@@ -21,7 +21,7 @@ final class AppWindowController: NSObject, NSWindowDelegate {
         window.isReleasedWhenClosed = false
         window.contentMinSize = NSSize(width: 440, height: 480)
         window.appearance = WindowTheme.current.appearance
-        window.contentView = NSHostingView(rootView: AppWindowView(timer: timer, sessions: sessions) { [weak self] theme in
+        window.contentView = NSHostingView(rootView: AppWindowView(timer: timer, stopwatch: stopwatch, sessions: sessions) { [weak self] theme in
             self?.apply(theme)
         })
         // Layer-backed from the start, so the theme's crossfade doesn't also convert the view mid-switch.
@@ -54,13 +54,15 @@ final class AppWindowController: NSObject, NSWindowDelegate {
     }
 }
 
-/// The theme control, the timer, the last focus session, then every day's sessions, newest day first, each with
+/// The theme control, the timer or stopwatch, the last focus session, then every day's sessions, newest day first, each with
 /// its focus total. Click a row for its ⌫ button; the ⌫ key works too.
 struct AppWindowView: View {
     @ObservedObject var timer: PomodoroTimer
+    @ObservedObject var stopwatch: Stopwatch
     @ObservedObject var sessions: SessionStore
     let onTheme: (WindowTheme) -> Void
 
+    @State private var tab = PopoutTab.timer
     @State private var selected: UUID?
     @FocusState private var focused: Bool
 
@@ -72,13 +74,24 @@ struct AppWindowView: View {
                 ThemeControl(onChange: onTheme)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.bottom, -24)
-                // The pet's own timer, so the two always agree.
-                TimerTab(timer: timer, clockSize: 56, glass: true)
-                    .frame(maxWidth: 360)
-                    .padding(.vertical, 24)
-                    .padding(.horizontal, 20)
-                    .frame(maxWidth: .infinity)
-                    .glassPane()
+                // The pet's own timer and stopwatch, so the window and popout always agree.
+                VStack(spacing: 16) {
+                    Picker("Tab", selection: $tab) {
+                        ForEach([PopoutTab.timer, .stopwatch], id: \.self) { Text($0.rawValue).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    if tab == .timer {
+                        TimerTab(timer: timer, clockSize: 56, glass: true)
+                    } else {
+                        StopwatchTab(stopwatch: stopwatch, clockSize: 56, glass: true)
+                    }
+                }
+                .frame(maxWidth: 360)
+                .padding(.vertical, 24)
+                .padding(.horizontal, 20)
+                .frame(maxWidth: .infinity)
+                .glassPane()
                 if let last = sessions.sessions.filter({ $0.kind == .focus }).max(by: { $0.end < $1.end }) {
                     LastSessionCard(session: last)
                 }
