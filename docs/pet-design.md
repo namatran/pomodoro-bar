@@ -6,7 +6,7 @@ The app started as a Pomodoro timer and is now closer to a **focus tracker with 
 
 ## Scope of the first round
 - Build the UI with mock data. The timer, stopwatch and alarm are real. The Today tab reads from one `MockToday` source, and saved runs are added to that list in memory so recording can be seen working.
-- Saving sessions for real (replacing the per-day counts in `PomodoroLog.swift`) comes in a later round, when the data is connected. After that come the website steps and the app's upload.
+- Saving sessions for real (replacing the per-day counts in `PomodoroLog.swift`) comes in a later round, when the data is connected. After that come the website steps and the app's upload. All of this was done in the second round (see Storage and Upload), and the third round then removed the upload and retired the website (see A real app, with a window).
 - Keep the implementation clean and simple.
 
 ## Architecture
