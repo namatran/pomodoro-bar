@@ -55,7 +55,7 @@ final class AppWindowController: NSObject, NSWindowDelegate {
 }
 
 /// The theme control, the timer or stopwatch, the last focus session, then every day's sessions, newest day first, each with
-/// its focus total. Click a row for its ⌫ button; the ⌫ key works too.
+/// its focus total. Click a row for its edit and ⌫ buttons; the ⌫ key works too.
 struct AppWindowView: View {
     @ObservedObject var timer: PomodoroTimer
     @ObservedObject var stopwatch: Stopwatch
@@ -65,6 +65,7 @@ struct AppWindowView: View {
     /// The popout's tab. The window has no Today, so it shows the timer then.
     @AppStorage(PopoutTab.key) private var tab = PopoutTab.timer
     @State private var selected: UUID?
+    @State private var editing: Session?
     @FocusState private var focused: Bool
 
     var body: some View {
@@ -101,7 +102,7 @@ struct AppWindowView: View {
                 }
                 LazyVStack(spacing: 14) {
                     ForEach(days, id: \.day) { day in
-                        DayCard(day: day.day, sessions: day.sessions, selected: selected, onSelect: select, onDelete: delete)
+                        DayCard(day: day.day, sessions: day.sessions, selected: selected, onSelect: select, onEdit: { editing = $0 }, onDelete: delete)
                     }
                 }
             }
@@ -130,6 +131,9 @@ struct AppWindowView: View {
         }
         .onChange(of: focused) {
             if !focused { selected = nil }
+        }
+        .sheet(item: $editing) { session in
+            SessionEditor(session: session) { sessions.update($0) }
         }
     }
 

@@ -1,13 +1,14 @@
 import SwiftUI
 
 /// One day, like the site's: a glass card that opens and closes, with the day, its focus count and total,
-/// then a table of the day's sessions, newest first. Clicking a row selects it and shows its ⌫ button.
+/// then a table of the day's sessions, newest first. Clicking a row selects it and shows its edit and ⌫ buttons.
 struct DayCard: View {
     let day: Date
     /// Oldest first, as `SessionStore.byDay` gives them.
     let sessions: [Session]
     let selected: UUID?
     let onSelect: (UUID) -> Void
+    let onEdit: (Session) -> Void
     let onDelete: (UUID) -> Void
 
     @State private var isOpen = true
@@ -103,6 +104,10 @@ struct DayCard: View {
                 .foregroundStyle(Glass.inkSoft)
                 .frame(width: Self.lengthWidth, alignment: .trailing)
             if isSelected {
+                Button { onEdit(session) } label: { Image(systemName: "pencil") }
+                    .buttonStyle(.borderless)
+                    .help("Edit session")
+                    .padding(.leading, 10)
                 Button { onDelete(session.id) } label: { Image(systemName: "delete.left") }
                     .buttonStyle(.borderless)
                     .help("Delete session")
@@ -122,7 +127,7 @@ struct DayCard: View {
         .contentShape(Rectangle())
         .onTapGesture { onSelect(session.id) }
         // Nothing else says a row can be clicked, or what a click is for.
-        .help(isSelected ? "Press ⌫ to delete, or click to deselect" : "Click to select, then press ⌫ to delete")
+        .help(isSelected ? "Click the pencil to edit, press ⌫ to delete, or click to deselect" : "Click to select, then edit or press ⌫ to delete")
     }
 
     /// "Today, Sat", "Yesterday, Fri" or "Oct 14, Wed".
