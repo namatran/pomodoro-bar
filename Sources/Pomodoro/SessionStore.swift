@@ -37,6 +37,13 @@ final class SessionStore: ObservableObject {
         save()
     }
 
+    /// Replace the stored session that has this one's id.
+    func update(_ session: Session) {
+        guard let index = sessions.firstIndex(where: { $0.id == session.id }) else { return }
+        sessions[index] = session
+        save()
+    }
+
     func delete(_ id: UUID) {
         sessions.removeAll { $0.id == id }
         save()
