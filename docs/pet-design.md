@@ -148,6 +148,8 @@ Settled on 2026-10-24, for the third round. The app becomes something you open f
 - **Opening it:** opening Pomodoro while it runs shows the pet if it's hidden and opens the app window.
 - **Dock:** still menu-bar only. While the window is open, the app shows in the Dock and ⌘Tab, so the window can't get lost behind others, and it leaves again when the window closes.
 - **The window:** a Focus | Break timer (the same timer as the pet's, so they always agree), the last session up top, then every day's sessions with each day's focus total. A row is deleted as in Today: select it and press ⌫.
+- **Editing (settled 2026-11-20):** a selected row in the window also shows a pencil, which opens an edit sheet with Focus | Break, start and end (full date and time, so a session can move to another day), and the length in minutes. The length is time counted, leaving out pauses, so it can't be longer than start to end; whatever's left over shows as paused. A focus session keeps whether it finished or stopped early, and a break switched to focus counts as finished. Today in the popout stays delete-only. The stopwatch is still never saved.
+- **Next: a draggable timeline**, like TickTick's, where sessions are blocks that can be dragged to move or resize them. Its own stage, after editing; not designed yet.
 - **Opened from:** Spotlight, the pet's right-click menu, the menu bar dropdown, and a "See all" link at the bottom of the Today tab.
 - **Look:** the glass design from the website's redesign (`~/dev/pomodoro-web/DESIGN.md`), ported to SwiftUI.
 - **Icon:** the drawn tomato, rendered from `TomatoView` when the app is bundled, so the icon always matches the pet.
