@@ -31,6 +31,9 @@ final class PomodoroTimer: ObservableObject {
     private var startedAt: Date?
     private var completedAt: Date?
     private var countedSeconds = 0
+    private var pauses: [Session.Pause] = []
+    /// When the open pause began, if the run is paused.
+    private var pausedAt: Date?
 
     /// Fresh or just reset: the mode can change and settings apply.
     var isFresh: Bool { !hasStarted }
@@ -48,6 +51,7 @@ final class PomodoroTimer: ObservableObject {
             hasStarted = true
             startedAt = Date()
         }
+        closePause()
         isRunning = true
         let timer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.tick() }
@@ -69,15 +73,29 @@ final class PomodoroTimer: ObservableObject {
     }
 
     func pause() {
+        guard isRunning else { return }
+        stopTicking()
+        pausedAt = Date()
+    }
+
+    private func stopTicking() {
         isRunning = false
         ticker?.invalidate()
         ticker = nil
     }
 
+    /// End the open pause now, keeping it if it lasted a minute or more.
+    private func closePause() {
+        guard let pausedAt else { return }
+        let pause = Session.Pause(start: pausedAt, end: Date())
+        if pause.seconds >= 60 { pauses.append(pause) }
+        self.pausedAt = nil
+    }
+
     /// Save the run, then switch mode if the clock had finished, or restart this one.
     func reset() {
         stopAlarm()
-        pause()
+        stopTicking()
         saveRun()
         if isFinished { phase = phase.other }
         clearRun()
@@ -117,7 +135,7 @@ final class PomodoroTimer: ObservableObject {
 
     /// The clock ran out: ring and hold at zero until Reset.
     private func finishPhase() {
-        pause()
+        stopTicking()
         isFinished = true
         completedAt = Date()
         Notifier.phaseEnded(phase, next: phase.other)
@@ -126,16 +144,18 @@ final class PomodoroTimer: ObservableObject {
 
     private func saveRun() {
         guard let startedAt, countedSeconds >= Self.minimumSessionSeconds else { return }
+        // Paused when Reset or Quit came: the pause runs to the save.
+        closePause()
         let now = Date()
         let session: Session
         switch phase {
         case .work:
             session = Session(id: UUID(), kind: .focus, startedAt: startedAt, completedAt: completedAt,
-                              endedAt: now, durationSeconds: countedSeconds, pauses: nil)
+                              endedAt: now, durationSeconds: countedSeconds, pauses: pauses)
         case .rest:
             // A break ends when its clock did, or when Reset cut it short; it has no separate save time.
             session = Session(id: UUID(), kind: .rest, startedAt: startedAt, completedAt: completedAt ?? now,
-                              endedAt: nil, durationSeconds: countedSeconds, pauses: nil)
+                              endedAt: nil, durationSeconds: countedSeconds, pauses: pauses)
         }
         onSessionSaved(session)
         self.startedAt = nil
@@ -145,6 +165,8 @@ final class PomodoroTimer: ObservableObject {
         startedAt = nil
         completedAt = nil
         countedSeconds = 0
+        pauses = []
+        pausedAt = nil
         isFinished = false
         hasStarted = false
         remaining = phase.seconds
