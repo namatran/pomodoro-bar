@@ -170,8 +170,9 @@ final class PomodoroTimer: ObservableObject {
         let session: Session
         switch phase {
         case .work:
+            // Held at zero and not kept going, it ends at zero, so a missed alarm adds no time.
             session = Session(id: UUID(), kind: .focus, startedAt: startedAt, completedAt: completedAt,
-                              endedAt: now, durationSeconds: countedSeconds, pauses: pauses)
+                              endedAt: isFinished ? completedAt : now, durationSeconds: countedSeconds, pauses: pauses)
         case .rest:
             // A break ends when its clock did, or when Reset cut it short; it has no separate save time.
             session = Session(id: UUID(), kind: .rest, startedAt: startedAt, completedAt: completedAt ?? now,

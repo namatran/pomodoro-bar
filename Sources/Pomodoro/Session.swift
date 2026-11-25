@@ -20,9 +20,10 @@ struct Session: Identifiable, Equatable, Codable {
     /// Focus: when the clock hit zero, nil if stopped early.
     /// Break: when the clock hit zero, or when Reset cut it short.
     let completedAt: Date?
-    /// Focus only: when Reset or Quit saved it.
+    /// Focus only: when Reset or Quit saved it after counting past zero or stopping early; the zero time if it
+    /// waited there. Sessions saved before overtime may include the wait.
     let endedAt: Date?
-    /// Time counted down, not counting pauses.
+    /// Time on the clock, counting past zero but not pauses.
     let durationSeconds: Int
     /// Each pause of a minute or more, oldest first. Nil for sessions saved before pauses were recorded.
     let pauses: [Pause]?
