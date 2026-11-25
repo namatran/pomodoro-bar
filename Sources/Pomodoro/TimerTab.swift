@@ -46,7 +46,8 @@ struct TimerTab: View {
                     }
                 }
                 .timerButton(prominent: true, glass: glass)
-                .disabled(timer.isFinished && draft == nil)
+                // At zero, Start keeps focus going; a break has nothing to keep going.
+                .disabled(timer.isFinished && !timer.canKeepGoing && draft == nil)
                 Button("Reset") { timer.reset() }
                     .timerButton(prominent: false, glass: glass)
             }
@@ -64,8 +65,11 @@ struct TimerTab: View {
     /// hh:mm:ss, dropping empty leading groups (`25:00`, `45`) except while typing, which shows all six
     /// digits. Each digit is its own view so a click can place the caret beside it.
     private var clock: some View {
-        let digits = draft ?? Self.digits(of: timer.remaining)
+        let digits = draft ?? Self.digits(of: shownSeconds)
         return HStack(spacing: 0) {
+            if timer.isOvertime && draft == nil {
+                Text("+").onTapGesture { beginEditing(caret: firstShownDigit) }
+            }
             ForEach(firstShownDigit..<6, id: \.self) { i in
                 if (i == 2 || i == 4) && i != firstShownDigit {
                     Text(":").onTapGesture { beginEditing(caret: i) }
@@ -102,16 +106,19 @@ struct TimerTab: View {
     /// Red clock and "Reset to save" until Reset saves a finished run, unless a new time is being typed.
     private var showsUnsaved: Bool { timer.hasUnsavedRun && draft == nil }
 
+    /// The time left, or the time past zero while focus keeps going.
+    private var shownSeconds: Int { timer.isOvertime ? timer.overtime : timer.remaining }
+
     /// Like Google, the clock shrinks as it counts down: hours go below an hour, minutes below a minute.
     private var firstShownDigit: Int {
         guard draft == nil else { return 0 }
-        if timer.remaining >= 3600 { return 0 }
-        return timer.remaining >= 60 ? 2 : 4
+        if shownSeconds >= 3600 { return 0 }
+        return shownSeconds >= 60 ? 2 : 4
     }
 
     private var hint: String {
         if draft != nil { return "Enter to start · Esc to cancel" }
-        if showsUnsaved { return "Reset to save" }
+        if showsUnsaved { return timer.canKeepGoing ? "Start to keep going · Reset to save" : "Reset to save" }
         guard hovering else { return " " }
         if timer.isRunning { return "Click to pause" }
         return timer.hasStarted ? "Click to type a time · ends this run" : "Click to type a time"
@@ -124,7 +131,7 @@ struct TimerTab: View {
             return
         }
         if draft == nil {
-            original = Self.digits(of: timer.remaining)
+            original = Self.digits(of: shownSeconds)
             draft = original
         }
         self.caret = caret

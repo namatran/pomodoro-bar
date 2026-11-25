@@ -6,7 +6,7 @@ extension Int {
 }
 
 /// Google-timer style: Start/Pause and Reset, in Focus or Break mode. At zero it rings and holds;
-/// Reset saves the run and switches mode.
+/// Reset saves the run and switches mode. Focus can keep going past zero, counting up until Reset.
 @MainActor
 final class PomodoroTimer: ObservableObject {
     /// Shorter runs are treated as accidental and not saved.
@@ -20,6 +20,10 @@ final class PomodoroTimer: ObservableObject {
     /// Started at least once since the last reset; the mode is locked until then.
     @Published private(set) var hasStarted = false
     @Published private(set) var isAlarming = false
+    /// A focus run kept going past zero, counting up.
+    @Published private(set) var isOvertime = false
+    /// Seconds counted past zero.
+    @Published private(set) var overtime = 0
 
     /// Called when Reset, Quit or a typed new time saves a run.
     var onSessionSaved: @MainActor (Session) -> Void = { _ in }
@@ -41,12 +45,24 @@ final class PomodoroTimer: ObservableObject {
     /// The clock reached zero on a run long enough to save, and Reset hasn't saved it yet.
     var hasUnsavedRun: Bool { isFinished && countedSeconds >= Self.minimumSessionSeconds }
 
+    /// Focus held at zero, where Start keeps it going.
+    var canKeepGoing: Bool { isFinished && phase == .work }
+
+    /// mm:ss counting down, or +mm:ss past zero.
+    var clockText: String { isOvertime ? "+\(overtime.clock)" : remaining.clock }
+
     /// A new time can be typed whenever the clock isn't running.
     var canType: Bool { !isRunning }
 
+    /// Start or resume. At zero in focus, keep going: the clock counts up and Reset saves it all.
     func start() {
         stopAlarm()
-        guard !isRunning, remaining > 0 else { return }
+        guard !isRunning else { return }
+        if canKeepGoing {
+            isFinished = false
+            isOvertime = true
+        }
+        guard remaining > 0 || isOvertime else { return }
         if !hasStarted {
             hasStarted = true
             startedAt = Date()
@@ -97,7 +113,7 @@ final class PomodoroTimer: ObservableObject {
         stopAlarm()
         stopTicking()
         saveRun()
-        if isFinished { phase = phase.other }
+        if isFinished || isOvertime { phase = phase.other }
         clearRun()
     }
 
@@ -128,8 +144,12 @@ final class PomodoroTimer: ObservableObject {
 
     private func tick() {
         guard isRunning else { return }
-        remaining -= 1
         countedSeconds += 1
+        if isOvertime {
+            overtime += 1
+            return
+        }
+        remaining -= 1
         if remaining <= 0 { finishPhase() }
     }
 
@@ -168,6 +188,8 @@ final class PomodoroTimer: ObservableObject {
         pauses = []
         pausedAt = nil
         isFinished = false
+        isOvertime = false
+        overtime = 0
         hasStarted = false
         remaining = phase.seconds
     }

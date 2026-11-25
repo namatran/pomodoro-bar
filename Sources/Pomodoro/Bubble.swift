@@ -1,7 +1,8 @@
 import AppKit
 import SwiftUI
 
-/// "Focus done! Break next" beside the pet while the alarm rings, with a Stop button. It records nothing.
+/// Beside the pet while the alarm rings. Focus asks "Keep going?": Keep going counts up past zero, Done saves
+/// the session ending at zero. A break says "Break done! Focus next" with a Stop button.
 @MainActor
 final class BubbleController {
     private let panel: NSPanel
@@ -42,9 +43,16 @@ struct BubbleView: View {
     var body: some View {
         // The timer holds on the phase that just finished until Reset.
         HStack(spacing: 10) {
-            Text("\(timer.phase.label) done! \(timer.phase.other.label) next")
-            Button("Stop") { timer.stopAlarm() }
-                .buttonStyle(.borderedProminent)
+            if timer.canKeepGoing {
+                Text("\(timer.phase.label) done! Keep going?")
+                Button("Done") { timer.reset() }
+                Button("Keep going") { timer.start() }
+                    .buttonStyle(.borderedProminent)
+            } else {
+                Text("\(timer.phase.label) done! \(timer.phase.other.label) next")
+                Button("Stop") { timer.stopAlarm() }
+                    .buttonStyle(.borderedProminent)
+            }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
