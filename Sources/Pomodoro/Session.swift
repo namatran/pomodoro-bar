@@ -26,7 +26,9 @@ struct Session: Identifiable, Equatable, Codable {
 
     /// The same session with the edit sheet's values. A break ends at `end`. A focus session keeps whether it
     /// finished, and its clock still hits zero as long after the start as before, kept within the new times.
-    func edited(kind: Kind, start: Date, end: Date, durationSeconds: Int) -> Session {
+    /// The time counted stays the same unless the new times are too short for it.
+    func edited(kind: Kind, start: Date, end: Date) -> Session {
+        let durationSeconds = min(self.durationSeconds, Int(end.timeIntervalSince(start)))
         switch kind {
         case .rest:
             return Session(id: id, kind: .rest, startedAt: start, completedAt: end, endedAt: nil, durationSeconds: durationSeconds)

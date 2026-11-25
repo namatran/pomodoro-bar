@@ -1,7 +1,6 @@
 import SwiftUI
 
-/// The window's edit sheet: Focus or Break, start and end, and the length, which leaves out pauses
-/// and so can't be longer than start to end.
+/// The window's edit sheet: Focus or Break, start and end. The length follows from start and end.
 struct SessionEditor: View {
     let session: Session
     let onSave: (Session) -> Void
@@ -10,7 +9,6 @@ struct SessionEditor: View {
     @State private var kind: Session.Kind
     @State private var start: Date
     @State private var end: Date
-    @State private var minutes: Int
 
     init(session: Session, onSave: @escaping (Session) -> Void) {
         self.session = session
@@ -18,7 +16,6 @@ struct SessionEditor: View {
         _kind = State(initialValue: session.kind)
         _start = State(initialValue: session.startedAt)
         _end = State(initialValue: session.end)
-        _minutes = State(initialValue: Self.wholeMinutes(session.durationSeconds))
     }
 
     var body: some View {
@@ -37,15 +34,8 @@ struct SessionEditor: View {
                 }
                 GridRow {
                     Text("Length")
-                    HStack(spacing: 6) {
-                        TextField("Length", value: $minutes, format: .number)
-                            .labelsHidden()
-                            .frame(width: 56)
-                            .multilineTextAlignment(.trailing)
-                        Stepper("Length", value: $minutes, in: 1...max(1, spanMinutes)).labelsHidden()
-                        Text("min, not counting pauses")
-                            .foregroundStyle(Glass.inkSoft)
-                    }
+                    Text(end > start ? SiteFormat.minutesText(Int(end.timeIntervalSince(start))) : "–")
+                        .monospacedDigit()
                 }
             }
             .font(.system(size: 14))
@@ -59,7 +49,7 @@ struct SessionEditor: View {
                 Button("Cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
                 Button("Save") {
-                    onSave(session.edited(kind: kind, start: start, end: end, durationSeconds: durationSeconds))
+                    onSave(session.edited(kind: kind, start: start, end: end))
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
@@ -71,21 +61,8 @@ struct SessionEditor: View {
         .fontDesign(.rounded)
     }
 
-    /// Whole minutes from start to end, the longest the length can be.
-    private var spanMinutes: Int { Int(end.timeIntervalSince(start)) / 60 }
-
     /// Why Save is off, or nil when the values make a session.
     private var problem: String? {
-        if end <= start { return "End must be after Start." }
-        if minutes < 1 { return "Length must be at least 1 min." }
-        if durationSeconds > Int(end.timeIntervalSince(start)) { return "Length can't be longer than Start to End." }
-        return nil
+        end <= start ? "End must be after Start." : nil
     }
-
-    /// The stored seconds while the minutes are untouched, so opening and saving changes nothing.
-    private var durationSeconds: Int {
-        minutes == Self.wholeMinutes(session.durationSeconds) ? session.durationSeconds : minutes * 60
-    }
-
-    private static func wholeMinutes(_ seconds: Int) -> Int { max(1, Int((Double(seconds) / 60).rounded())) }
 }
