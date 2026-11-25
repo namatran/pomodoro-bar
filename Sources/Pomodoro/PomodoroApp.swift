@@ -17,6 +17,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         timer.onSessionSaved = { [sessions] in sessions.add($0) }
+        timer.confirmShortRun = { seconds in
+            NSApp.activate()
+            let alert = NSAlert()
+            alert.messageText = "This is short. Save it?"
+            alert.informativeText = seconds == 1 ? "It ran for 1 second." : "It ran for \(seconds) seconds."
+            alert.addButton(withTitle: "Save")
+            alert.addButton(withTitle: "Don't Save")
+            return alert.runModal() == .alertFirstButtonReturn
+        }
         // Uploading to the site is gone; drop its URL, token and queues.
         for key in ["siteURL", "uploadToken", "sentSessionIDs", "pendingDeleteIDs"] {
             UserDefaults.standard.removeObject(forKey: key)

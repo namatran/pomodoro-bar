@@ -9,8 +9,8 @@ extension Int {
 /// Reset saves the run and switches mode. Focus can keep going past zero, counting up until Reset.
 @MainActor
 final class PomodoroTimer: ObservableObject {
-    /// Shorter runs are treated as accidental and not saved.
-    static let minimumSessionSeconds = 60
+    /// Shorter runs may be accidental, so saving one asks first.
+    static let shortRunSeconds = 30
 
     @Published private(set) var phase: Phase = .work
     @Published private(set) var remaining: Int = Phase.work.seconds
@@ -27,6 +27,8 @@ final class PomodoroTimer: ObservableObject {
 
     /// Called when Reset, Quit or a typed new time saves a run.
     var onSessionSaved: @MainActor (Session) -> Void = { _ in }
+    /// Asked before Reset or a typed new time saves a short run, with its seconds counted. True saves it.
+    var confirmShortRun: @MainActor (Int) -> Bool = { _ in true }
 
     private var ticker: Timer?
     private let alarm = Alarm()
@@ -42,8 +44,8 @@ final class PomodoroTimer: ObservableObject {
     /// Fresh or just reset: the mode can change and settings apply.
     var isFresh: Bool { !hasStarted }
 
-    /// The clock reached zero on a run long enough to save, and Reset hasn't saved it yet.
-    var hasUnsavedRun: Bool { isFinished && countedSeconds >= Self.minimumSessionSeconds }
+    /// The clock reached zero and Reset hasn't saved the run yet.
+    var hasUnsavedRun: Bool { isFinished }
 
     /// Focus held at zero, where Start keeps it going.
     var canKeepGoing: Bool { isFinished && phase == .work }
@@ -137,9 +139,9 @@ final class PomodoroTimer: ObservableObject {
         isAlarming = false
     }
 
-    /// Save an unsaved run on Quit.
+    /// Save an unsaved run on Quit, short or not: a prompt would hold up quitting.
     func saveOnQuit() {
-        saveRun()
+        saveRun(asking: false)
     }
 
     private func tick() {
@@ -162,8 +164,9 @@ final class PomodoroTimer: ObservableObject {
         ringAlarm()
     }
 
-    private func saveRun() {
-        guard let startedAt, countedSeconds >= Self.minimumSessionSeconds else { return }
+    private func saveRun(asking: Bool = true) {
+        guard let startedAt else { return }
+        if asking && countedSeconds < Self.shortRunSeconds && !confirmShortRun(countedSeconds) { return }
         // Paused when Reset or Quit came: the pause runs to the save.
         closePause()
         let now = Date()
