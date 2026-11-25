@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// One day, like the site's: a glass card that opens and closes, with the day, its focus count and total,
-/// then a table of the day's sessions, newest first. Clicking a row selects it and shows its edit and ⌫ buttons.
+/// then a table of the day's sessions, newest first. Clicking a row selects it and shows its edit and ⌫ buttons,
+/// and its running stretches and pauses if they were recorded.
 struct DayCard: View {
     let day: Date
     /// Oldest first, as `SessionStore.byDay` gives them.
@@ -85,40 +86,46 @@ struct DayCard: View {
 
     private func row(_ session: Session) -> some View {
         let isSelected = selected == session.id
-        return HStack(alignment: .firstTextBaseline, spacing: 0) {
-            Text(SiteFormat.timeText(session.startedAt))
-                .frame(width: Self.startWidth, alignment: .leading)
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(SiteFormat.timeText(session.end))
-                if let notes = Self.notes(session) {
-                    Text(notes)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Glass.inkSoft)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(Capsule().fill(Glass.chip))
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                Text(SiteFormat.timeText(session.startedAt))
+                    .frame(width: Self.startWidth, alignment: .leading)
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(SiteFormat.timeText(session.end))
+                    if let notes = Self.notes(session) {
+                        Text(notes)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Glass.inkSoft)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(Glass.chip))
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Text(SiteFormat.minutesText(session.lengthSeconds))
+                    .foregroundStyle(Glass.inkSoft)
+                    .frame(width: Self.lengthWidth, alignment: .trailing)
+                if isSelected {
+                    Button { onEdit(session) } label: { Image(systemName: "pencil") }
+                        .buttonStyle(.borderless)
+                        .help("Edit session")
+                        .padding(.leading, 10)
+                    Button { onDelete(session.id) } label: { Image(systemName: "delete.left") }
+                        .buttonStyle(.borderless)
+                        .help("Delete session")
+                        .padding(.leading, 10)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            Text(SiteFormat.minutesText(session.lengthSeconds))
-                .foregroundStyle(Glass.inkSoft)
-                .frame(width: Self.lengthWidth, alignment: .trailing)
-            if isSelected {
-                Button { onEdit(session) } label: { Image(systemName: "pencil") }
-                    .buttonStyle(.borderless)
-                    .help("Edit session")
-                    .padding(.leading, 10)
-                Button { onDelete(session.id) } label: { Image(systemName: "delete.left") }
-                    .buttonStyle(.borderless)
-                    .help("Delete session")
-                    .padding(.leading, 10)
+            .font(.system(size: 15))
+            .monospacedDigit()
+            .lineLimit(1)
+            // Break rows are all Soft Ink.
+            .foregroundStyle(session.kind == .rest ? Glass.inkSoft : Glass.ink)
+            if isSelected, let segments = session.segments {
+                SegmentList(segments: segments)
+                    .padding(.leading, 2)
             }
         }
-        .font(.system(size: 15))
-        .monospacedDigit()
-        .lineLimit(1)
-        // Break rows are all Soft Ink.
-        .foregroundStyle(session.kind == .rest ? Glass.inkSoft : Glass.ink)
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)

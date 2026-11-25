@@ -56,6 +56,28 @@ struct Session: Identifiable, Equatable, Codable {
         }
     }
 
+    /// One running stretch or pause, for the segment list.
+    struct Segment: Hashable {
+        let start: Date
+        let end: Date
+        let isPause: Bool
+        var seconds: Int { Int(end.timeIntervalSince(start)) }
+    }
+
+    /// Running stretches and pauses in order, from start to end. Nil without recorded pauses.
+    var segments: [Segment]? {
+        guard let pauses, !pauses.isEmpty else { return nil }
+        var segments: [Segment] = []
+        var cursor = startedAt
+        for pause in pauses {
+            if pause.start > cursor { segments.append(Segment(start: cursor, end: pause.start, isPause: false)) }
+            segments.append(Segment(start: pause.start, end: pause.end, isPause: true))
+            cursor = pause.end
+        }
+        if end > cursor { segments.append(Segment(start: cursor, end: end, isPause: false)) }
+        return segments
+    }
+
     /// Time spent paused, which the duration leaves out. Waiting at zero for Reset isn't a pause, and under a minute doesn't count.
     /// Older sessions without recorded pauses work it out from the times.
     var pausedSeconds: Int {
