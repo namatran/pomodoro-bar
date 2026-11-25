@@ -70,10 +70,10 @@ The app started as a Pomodoro timer and is now closer to a **focus tracker with 
 ### When the clock hits zero
 - The alarm rings, the display holds at `00:00:00`, and the sprite celebrates (after focus) or shows the break face (after a break).
 - A bubble appears beside the pet on the side with room. After a break it says "Break done! Focus next", with a **Stop** button; after focus it asks "Focus done! Keep going?" (see Overtime below). Clicking the pet while it rings also stops the alarm instead of opening the popout. Stop and the click record nothing. The alarm still stops itself after 60 seconds.
-- Until Reset saves the run, it's flagged in red (added 2026-10-22): the popout's clock turns red with a "Reset to save" hint, the menu bar title shows 🔴 in place of the mode's emoji, and the pet gets a red dot. A run under 60 seconds isn't flagged, because Reset won't save it.
+- Until Reset saves the run, it's flagged in red (added 2026-10-22): the popout's clock turns red with a "Reset to save" hint, the menu bar title shows 🔴 in place of the mode's emoji, and the pet gets a red dot.
 
 ### Reset and recording
-- **Reset** saves the run if it has at least 60 seconds counted down (not counting pauses), whether or not it reached zero. Anything shorter is thrown away.
+- **Reset** saves the run whether or not it reached zero. Under 30 seconds on the clock (not counting pauses), it first asks "This is short. Save it?" with Save and Don't Save (changed 2026-11-25; it used to throw away anything under 60 seconds). Typing a new time asks the same. Quit saves without asking, so a prompt can't hold up quitting.
 - Reset after zero loads the other mode, ready to start but not started. Reset mid-run goes back to the start of the same mode.
 - **Quit** saves an unsaved run in the same way. A force-quit or crash loses it.
 - Both focus and break runs are saved.
@@ -135,7 +135,7 @@ Removed on 2026-10-24 (see A real app, with a window); kept here as a record. Se
 
 ## Website
 Retired on 2026-10-24; the app no longer uploads. See `~/dev/pomodoro-web/docs/design.md`. It needs these changes:
-- Runs of at least 60s are logged whether or not they finished.
+- Runs are logged whether or not they finished; under 30s asks first (was: at least 60s, changed 2026-11-25).
 - Rows have a `kind`, and `ended_at` is empty for breaks.
 - `completed_at` is added.
 - Break rows are shown dimmer, and day counts and totals stay focus-only.
