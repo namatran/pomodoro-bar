@@ -6,6 +6,13 @@ struct Session: Identifiable, Equatable, Codable {
         case focus, rest = "break"
     }
 
+    /// One stretch with the clock paused.
+    struct Pause: Codable, Equatable {
+        let start: Date
+        let end: Date
+        var seconds: Int { Int(end.timeIntervalSince(start)) }
+    }
+
     let id: UUID
     let kind: Kind
     /// First start of the run.
@@ -17,6 +24,8 @@ struct Session: Identifiable, Equatable, Codable {
     let endedAt: Date?
     /// Time counted down, not counting pauses.
     let durationSeconds: Int
+    /// Each pause of a minute or more, oldest first. Nil for sessions saved before pauses were recorded.
+    let pauses: [Pause]?
 
     /// Where the row's time range ends: the save for focus, the finish for a break.
     var end: Date { endedAt ?? completedAt ?? startedAt }
@@ -31,19 +40,21 @@ struct Session: Identifiable, Equatable, Codable {
         let durationSeconds = min(self.durationSeconds, Int(end.timeIntervalSince(start)))
         switch kind {
         case .rest:
-            return Session(id: id, kind: .rest, startedAt: start, completedAt: end, endedAt: nil, durationSeconds: durationSeconds)
+            return Session(id: id, kind: .rest, startedAt: start, completedAt: end, endedAt: nil, durationSeconds: durationSeconds, pauses: pauses)
         case .focus:
             let completed = completedAt.map { completedAt in
                 let moved = start.addingTimeInterval(completedAt.timeIntervalSince(startedAt))
                 return min(max(moved, start.addingTimeInterval(TimeInterval(durationSeconds))), end)
             }
-            return Session(id: id, kind: .focus, startedAt: start, completedAt: completed, endedAt: end, durationSeconds: durationSeconds)
+            return Session(id: id, kind: .focus, startedAt: start, completedAt: completed, endedAt: end, durationSeconds: durationSeconds, pauses: pauses)
         }
     }
 
     /// Time spent paused, which the duration leaves out. Waiting at zero for Reset isn't a pause, and under a minute doesn't count.
+    /// Older sessions without recorded pauses work it out from the times.
     var pausedSeconds: Int {
-        let paused = Int((completedAt ?? end).timeIntervalSince(startedAt)) - durationSeconds
+        let paused = pauses.map { $0.reduce(0) { $0 + $1.seconds } }
+            ?? Int((completedAt ?? end).timeIntervalSince(startedAt)) - durationSeconds
         return paused >= 60 ? paused : 0
     }
 }

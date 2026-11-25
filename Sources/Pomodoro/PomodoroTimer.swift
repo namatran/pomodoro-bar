@@ -131,11 +131,11 @@ final class PomodoroTimer: ObservableObject {
         switch phase {
         case .work:
             session = Session(id: UUID(), kind: .focus, startedAt: startedAt, completedAt: completedAt,
-                              endedAt: now, durationSeconds: countedSeconds)
+                              endedAt: now, durationSeconds: countedSeconds, pauses: nil)
         case .rest:
             // A break ends when its clock did, or when Reset cut it short; it has no separate save time.
             session = Session(id: UUID(), kind: .rest, startedAt: startedAt, completedAt: completedAt ?? now,
-                              endedAt: nil, durationSeconds: countedSeconds)
+                              endedAt: nil, durationSeconds: countedSeconds, pauses: nil)
         }
         onSessionSaved(session)
         self.startedAt = nil
