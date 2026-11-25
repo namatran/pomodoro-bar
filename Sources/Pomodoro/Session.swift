@@ -35,9 +35,15 @@ struct Session: Identifiable, Equatable, Codable {
 
     /// The same session with the edit sheet's values. A break ends at `end`. A focus session keeps whether it
     /// finished, and its clock still hits zero as long after the start as before, kept within the new times.
-    /// The time counted stays the same unless the new times are too short for it.
+    /// Pauses keep their times, cut to fit within the new start and end; any left under a minute are dropped.
+    /// The time counted stays the same unless the new times, less the pauses, are too short for it.
     func edited(kind: Kind, start: Date, end: Date) -> Session {
-        let durationSeconds = min(self.durationSeconds, Int(end.timeIntervalSince(start)))
+        let pauses = self.pauses?.compactMap { pause -> Pause? in
+            let cut = Pause(start: max(pause.start, start), end: min(pause.end, end))
+            return cut.seconds >= 60 ? cut : nil
+        }
+        let paused = pauses?.reduce(0) { $0 + $1.seconds } ?? 0
+        let durationSeconds = min(self.durationSeconds, Int(end.timeIntervalSince(start)) - paused)
         switch kind {
         case .rest:
             return Session(id: id, kind: .rest, startedAt: start, completedAt: end, endedAt: nil, durationSeconds: durationSeconds, pauses: pauses)
