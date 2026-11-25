@@ -29,7 +29,7 @@ struct SessionRow: View {
                 }
             }
             Spacer()
-            Text(Self.length(session.durationSeconds))
+            Text(Self.length(session.lengthSeconds))
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
             if isSelected {
@@ -61,6 +61,6 @@ struct SessionRow: View {
     /// The 🍅 count and focus total for a list header. Breaks don't count.
     static func focusSummary(_ sessions: [Session]) -> String {
         let focus = sessions.filter { $0.kind == .focus }
-        return "\(focus.count) 🍅 · \(length(focus.reduce(0) { $0 + $1.durationSeconds }))"
+        return "\(focus.count) 🍅 · \(length(focus.reduce(0) { $0 + $1.lengthSeconds }))"
     }
 }

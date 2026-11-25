@@ -176,7 +176,7 @@ struct EmptyHistory: View {
     }
 }
 
-/// The last focus run, like the site's Last session: the tomato says when it ended, then Start, End and Focus
+/// The last focus run, like the site's Last session: the tomato says when it ended, then Start, End and Length
 /// as big figures, then the day line.
 struct LastSessionCard: View {
     let session: Session
@@ -201,7 +201,7 @@ struct LastSessionCard: View {
                 HStack(alignment: .top, spacing: 12) {
                     figure("Start", SiteFormat.time(session.startedAt))
                     figure("End", SiteFormat.time(session.end))
-                    figure("Focus", SiteFormat.minutes(session.durationSeconds), accent: true)
+                    figure("Length", SiteFormat.minutes(session.lengthSeconds), accent: true)
                 }
                 Rectangle()
                     .fill(Glass.hairline)
@@ -221,11 +221,11 @@ struct LastSessionCard: View {
         }
     }
 
-    /// "Thursday, Oct 22 · Stopped early · Paused 3 min, not counted as focus"
+    /// "Thursday, Oct 22 · Stopped early · Paused 3 min"
     private var dayLine: String {
         var parts = [session.end.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())]
         if session.completedAt == nil { parts.append("Stopped early") }
-        if session.pausedSeconds > 0 { parts.append("Paused \(SiteFormat.minutesText(session.pausedSeconds)), not counted as focus") }
+        if session.pausedSeconds > 0 { parts.append("Paused \(SiteFormat.minutesText(session.pausedSeconds))") }
         return parts.joined(separator: " · ")
     }
 

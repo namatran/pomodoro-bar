@@ -21,6 +21,9 @@ struct Session: Identifiable, Equatable, Codable {
     /// Where the row's time range ends: the save for focus, the finish for a break.
     var end: Date { endedAt ?? completedAt ?? startedAt }
 
+    /// The whole run from start to end, pauses included. This is the Length shown everywhere.
+    var lengthSeconds: Int { Int(end.timeIntervalSince(startedAt)) }
+
     /// The same session with the edit sheet's values. A break ends at `end`. A focus session keeps whether it
     /// finished, and its clock still hits zero as long after the start as before, kept within the new times.
     func edited(kind: Kind, start: Date, end: Date, durationSeconds: Int) -> Session {

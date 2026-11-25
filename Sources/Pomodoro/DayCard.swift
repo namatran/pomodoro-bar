@@ -40,7 +40,7 @@ struct DayCard: View {
                         .background(Capsule().fill(Glass.chip))
                         .accessibilityLabel(focus.count == 1 ? "1 session" : "\(focus.count) sessions")
                     Spacer()
-                    Text(SiteFormat.minutesText(focus.reduce(0) { $0 + $1.durationSeconds }))
+                    Text(SiteFormat.minutesText(focus.reduce(0) { $0 + $1.lengthSeconds }))
                         .font(.system(size: 22, weight: .semibold))
                         .tracking(-0.44)
                         .monospacedDigit()
@@ -100,7 +100,7 @@ struct DayCard: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            Text(SiteFormat.minutesText(session.durationSeconds))
+            Text(SiteFormat.minutesText(session.lengthSeconds))
                 .foregroundStyle(Glass.inkSoft)
                 .frame(width: Self.lengthWidth, alignment: .trailing)
             if isSelected {
