@@ -2,7 +2,7 @@ import SwiftUI
 
 /// One day, like the site's: a glass card that opens and closes, with the day, its focus count and total,
 /// then a table of the day's sessions, newest first. Clicking a row selects it and shows its edit and ⌫ buttons,
-/// and its running stretches and pauses if they were recorded.
+/// and a bar of its pauses if they were recorded.
 struct DayCard: View {
     let day: Date
     /// Oldest first, as `SessionStore.byDay` gives them.
@@ -122,8 +122,7 @@ struct DayCard: View {
             // Break rows are all Soft Ink.
             .foregroundStyle(session.kind == .rest ? Glass.inkSoft : Glass.ink)
             if isSelected, let segments = session.segments {
-                SegmentList(segments: segments)
-                    .padding(.leading, 2)
+                PauseBar(session: session, segments: segments)
             }
         }
         .padding(12)

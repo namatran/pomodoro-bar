@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The window's edit sheet: Focus or Break, start and end. The length follows from start and end, and
-/// any recorded pauses show in a collapsed list.
+/// any recorded pauses show as a bar.
 struct SessionEditor: View {
     let session: Session
     let onSave: (Session) -> Void
@@ -41,13 +41,11 @@ struct SessionEditor: View {
             }
             .font(.system(size: 14))
             // The pauses as Save would keep them, trimmed to the new times.
-            if let pauses = session.pauses, !pauses.isEmpty, problem == nil,
-               let segments = session.edited(kind: kind, start: start, end: end).segments {
-                DisclosureGroup("Pauses (\(segments.filter(\.isPause).count))") {
-                    SegmentList(segments: segments)
-                        .padding(.top, 8)
+            if problem == nil {
+                let edited = session.edited(kind: kind, start: start, end: end)
+                if let segments = edited.segments {
+                    PauseBar(session: edited, segments: segments)
                 }
-                .font(.system(size: 14))
             }
             if let problem {
                 Text(problem)
