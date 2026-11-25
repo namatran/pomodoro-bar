@@ -148,7 +148,13 @@ Settled on 2026-10-24, for the third round. The app becomes something you open f
 - **Opening it:** opening Pomodoro while it runs shows the pet if it's hidden and opens the app window.
 - **Dock:** still menu-bar only. While the window is open, the app shows in the Dock and ⌘Tab, so the window can't get lost behind others, and it leaves again when the window closes.
 - **The window:** a Focus | Break timer (the same timer as the pet's, so they always agree), the last session up top, then every day's sessions with each day's focus total. A row is deleted as in Today: select it and press ⌫.
-- **Editing (settled 2026-11-20):** a selected row in the window also shows a pencil, which opens an edit sheet with Focus | Break, start and end (full date and time, so a session can move to another day), and the length in minutes. The length is time counted, leaving out pauses, so it can't be longer than start to end; whatever's left over shows as paused. A focus session keeps whether it finished or stopped early, and a break switched to focus counts as finished. Today in the popout stays delete-only. The stopwatch is still never saved.
+- **Editing (settled 2026-11-20):** a selected row in the window also shows a pencil, which opens an edit sheet with Focus | Break, start and end (full date and time, so a session can move to another day), and the length, which can't be edited: it's start to end. A focus session keeps whether it finished or stopped early, and a break switched to focus counts as finished. Today in the popout stays delete-only. The stopwatch is still never saved.
+- **Length (settled 2026-11-20):** a session's length is its whole run from start to end, pauses included, in the rows, the day totals, Today and the Last session card (whose figure is now Length, not Focus). The "paused N min" note still shows how much of it was paused. `durationSeconds` is still stored as the time counted; an edit keeps it unless the new times are shorter.
+- **Pauses, planned (settled 2026-11-20):** following WorkHours' history, which lists each work and break segment with its times:
+  - Every pause's start and end is recorded from now on. Sessions saved before only have the total, so they show just "Paused N min".
+  - Selecting a row in the window also opens its segments underneath: running stretches with a solid ink bar, pauses in Soft Ink with a faint bar, each with its times and length. Rows without pauses only get selected.
+  - The edit sheet has a collapsed "Pauses (n)" list. Pauses can't be edited; moving start or end trims any that fall outside.
+- **Overtime, planned (settled 2026-11-20), focus only:** at zero the alarm bubble asks "Keep going?". Keep going counts up (+mm:ss) and Reset saves it all; Start at zero does the same. Done saves the session ending at zero. With no answer, the session also ends at zero, so a missed alarm never adds time. Breaks still end at zero.
 - **Next: a draggable timeline**, like TickTick's, where sessions are blocks that can be dragged to move or resize them. Its own stage, after editing; not designed yet.
 - **Opened from:** Spotlight, the pet's right-click menu, the menu bar dropdown, and a "See all" link at the bottom of the Today tab.
 - **Look:** the glass design from the website's redesign (`~/dev/pomodoro-web/DESIGN.md`), ported to SwiftUI.
@@ -162,7 +168,7 @@ Third round build order:
 1. Icon, opening from Spotlight, install to `/Applications`, open at login. Built.
 2. Remove uploading. Built. The stored URL, token and send queues are cleared from UserDefaults at launch.
 3. The window: opened from all four places, the Dock while open, last session, every day, delete. Built, in plain native styling until stage 4. Details settled while building it:
-   - The last session is the latest focus run, as on the site, with Start, End and Focus, then a day line that adds "Stopped early" and any pause of a minute or more.
+   - The last session is the latest focus run, as on the site, with Start, End and Focus (now Length), then a day line that adds "Stopped early" and any pause of a minute or more.
    - Day headings are "Today", "Yesterday", then the weekday and date, with the year only for past years.
    - The window remembers its size and position. It's an AppKit window, like the pet, so the pet and popout still float above it.
 4. The timer in the window, and the glass look. Built. Details settled while building it:
