@@ -25,7 +25,9 @@ if [ -f "$APPCAST" ] && grep -q "<sparkle:shortVersionString>$VERSION</sparkle:s
     exit 1
 fi
 
-SIGN_UPDATE="$(find .build/artifacts -name sign_update -type f 2>/dev/null | head -1)"
+# SwiftPM puts Sparkle's tools under .build/artifacts, or .build/index-build/artifacts when the editor fetched it.
+# bin/old_dsa_scripts has an older sign_update, so match the exact path.
+SIGN_UPDATE="$(find .build -path '*/artifacts/sparkle/Sparkle/bin/sign_update' -type f 2>/dev/null | head -1)"
 [ -n "$SIGN_UPDATE" ] || { echo "No sign_update. Run swift package resolve first." >&2; exit 1; }
 
 ./build_app.sh
