@@ -191,7 +191,7 @@ Settled on 2026-11-27, without a paid Apple Developer account:
 - **Checks:** automatic, once a day (Sparkle's default), without asking first. Installing still asks, unless the person ticks Sparkle's "automatically download and install".
 - **A menu bar app in the background:** Sparkle never pushes a window behind other apps. A scheduled check that finds an update while Pomodoro isn't in front flags it, and both menus say **Update available…** in place of **Check for updates…**. Choosing it brings the update to the front. `swift run` has no feed or key, so the item is disabled there.
 - **Embedding:** `build_app.sh` copies `Sparkle.framework` into `Contents/Frameworks` with `ditto`, adds the rpath, and ad-hoc signs only the app, without `--deep`, so the framework keeps Sparkle's own signature.
-- **Next:** a release script that zips a version, signs it with `sign_update` and adds it to the website's appcast.
+- **Releasing:** `release.sh` refuses uncommitted changes (the build number would be wrong) and a version already in the appcast. It runs `build_app.sh`, reads the version, build and minimum macOS from the installed app, and zips it into the website twice: `Pomodoro-<version>.zip`, which the appcast points to so older entries keep working, and `PomodoroBar.zip`, the landing page's latest download. It signs the zip with `sign_update`, puts the new item at the top of `public/appcast.xml` (creating it the first time), with the release notes if given, and sets `version` in `lib/release.ts`. Committing and pushing the website is left to the owner.
 - **Unverified:** whether Gatekeeper says anything when a Sparkle-installed update first opens. Sparkle has code to clear the quarantine flag; the first real update will show.
 
 ## Build order

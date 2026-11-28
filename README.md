@@ -57,6 +57,15 @@ The version is in `VERSION`, and the build number is the commit count, so every 
 
 To start it at login, turn on **Open at login** in the menu bar dropdown.
 
+## Release
+To ship a version that installed copies offer as an update, bump `VERSION`, commit, then:
+
+```bash
+./release.sh "What's new, in a line"
+```
+
+It builds and installs the app, zips it into the website (`../pomodoro-web`, or `WEB_DIR`) as `public/downloads/Pomodoro-<version>.zip` and `PomodoroBar.zip`, signs the zip with your key, adds it to `public/appcast.xml`, and sets the version in `lib/release.ts`. It commits nothing: commit and push the website, and the update goes out when Vercel deploys it.
+
 ## Notes
 - Notification banners need the app bundle. `swift run` still plays the alarm but skips the banner.
 - `swift run` and `Pomodoro.app` keep separate settings, because macOS stores them per bundle identifier. They share `sessions.json`, so don't run both at once, or one will overwrite the other's sessions.
@@ -92,6 +101,7 @@ Sources/Pomodoro/
   Notifier.swift       notification banners
   Updater.swift        Sparkle updates and Check for updates
 build_app.sh           wraps the release build and Sparkle in Pomodoro.app and installs it
+release.sh             zips, signs and adds a version to the website's appcast
 VERSION                the version shown to people, such as 1.1
 sparkle-public-key     the key updates must be signed with
 ```
