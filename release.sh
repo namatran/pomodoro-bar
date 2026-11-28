@@ -19,7 +19,7 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 
 VERSION="$(cat VERSION)"
-APPCAST="$WEB/public/appcast.xml"
+APPCAST="$WEB/feed/appcast.xml"
 if [ -f "$APPCAST" ] && grep -q "<sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>" "$APPCAST"; then
     echo "$VERSION is already in the appcast. Bump VERSION first." >&2
     exit 1
@@ -92,5 +92,5 @@ sed -i '' "s/version: \"[^\"]*\"/version: \"$SHORT\"/" "$WEB/lib/release.ts"
 
 echo
 echo "Released $SHORT (build $BUILD, $ARCHS) into $WEB:"
-echo "  public/downloads/$ZIP_NAME, public/downloads/PomodoroBar.zip, public/appcast.xml, lib/release.ts"
+echo "  public/downloads/$ZIP_NAME, public/downloads/PomodoroBar.zip, feed/appcast.xml, lib/release.ts"
 echo "Check lib/release.ts still says the right macOS and chip, then commit and push the website."

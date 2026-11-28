@@ -64,7 +64,7 @@ To ship a version that installed copies offer as an update, bump `VERSION`, comm
 ./release.sh "What's new, in a line"
 ```
 
-It builds and installs the app, zips it into the website (`../pomodoro-web`, or `WEB_DIR`) as `public/downloads/Pomodoro-<version>.zip` and `PomodoroBar.zip`, signs the zip with your key, adds it to `public/appcast.xml`, and sets the version in `lib/release.ts`. It commits nothing: commit and push the website, and the update goes out when Vercel deploys it.
+It builds and installs the app, zips it into the website (`../pomodoro-web`, or `WEB_DIR`) as `public/downloads/Pomodoro-<version>.zip` and `PomodoroBar.zip`, signs the zip with your key, adds it to `feed/appcast.xml`, and sets the version in `lib/release.ts`. It commits nothing: commit and push the website, and the update goes out when Vercel deploys it.
 
 ## Notes
 - Notification banners need the app bundle. `swift run` still plays the alarm but skips the banner.
