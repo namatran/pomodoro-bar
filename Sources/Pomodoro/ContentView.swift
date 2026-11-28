@@ -32,6 +32,7 @@ struct ContentView: View {
                 updater.checkForUpdates()
             }
             .disabled(!updater.canCheck)
+            CountInstallToggle()
             Button("Quit") { NSApplication.shared.terminate(nil) }
         }
         .padding()
@@ -84,5 +85,20 @@ struct OpenAtLoginToggle: View {
         } else {
             note = nil
         }
+    }
+}
+
+/// Whether update checks send the random install ID. See `InstallID`.
+struct CountInstallToggle: View {
+    @AppStorage(InstallID.countKey) private var isOn = true
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Toggle("Count this install", isOn: $isOn)
+            Text("Sends a random ID with update checks")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
