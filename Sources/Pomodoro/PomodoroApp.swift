@@ -39,6 +39,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         hotKey = HotKey(keyCode: kVK_ANSI_T, modifiers: controlKey | optionKey | cmdKey) { [weak self] in
             self?.togglePet()
         }
+        // After launch finishes, so the alert isn't held up by setup.
+        DispatchQueue.main.async { InstallID.askIfNeeded() }
     }
 
     /// Opening the app while it runs, say from Spotlight, brings out the pet and the window.

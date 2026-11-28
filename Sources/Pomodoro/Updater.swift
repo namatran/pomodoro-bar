@@ -72,15 +72,29 @@ final class Updater: NSObject, ObservableObject, SPUUpdaterDelegate, SPUStandard
     }
 }
 
-/// A random ID made the first time it's needed and sent with update checks, so the website can
-/// tell installs apart. It isn't tied to the Mac or the person, and it's dropped when counting
-/// is turned off, so turning it back on starts a new one.
+/// A random ID sent with update checks, so the website can tell installs apart. It's only sent
+/// after the person says yes (asked once, on first launch). It isn't tied to the Mac or the
+/// person, and it's dropped when counting is turned off, so turning it back on starts a new one.
 enum InstallID {
     static let key = "installID"
     static let countKey = "countInstall"
 
+    /// Off until the person answers the prompt.
     static var isCounted: Bool {
-        UserDefaults.standard.object(forKey: countKey) as? Bool ?? true
+        UserDefaults.standard.bool(forKey: countKey)
+    }
+
+    /// Asks once, the first time the bundled app runs. Until then, no ID is sent.
+    @MainActor
+    static func askIfNeeded() {
+        guard Updater.isBundled, UserDefaults.standard.object(forKey: countKey) == nil else { return }
+        NSApp.activate()
+        let alert = NSAlert()
+        alert.messageText = "Help count installs?"
+        alert.informativeText = "Pomodoro can send a random ID when it checks for updates, so its maker knows how many people use it. Nothing about you or your sessions is sent. You can change this later in the menu bar menu."
+        alert.addButton(withTitle: "Allow")
+        alert.addButton(withTitle: "Don't Allow")
+        UserDefaults.standard.set(alert.runModal() == .alertFirstButtonReturn, forKey: countKey)
     }
 
     /// The ID to send, or nil when counting is off.
