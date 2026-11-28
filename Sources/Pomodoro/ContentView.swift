@@ -5,6 +5,7 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var timer: PomodoroTimer
     @EnvironmentObject var app: AppDelegate
+    @EnvironmentObject var updater: Updater
     @AppStorage(Settings.workKey) private var workMinutes = 25
     @AppStorage(Settings.breakKey) private var breakMinutes = 5
 
@@ -27,6 +28,10 @@ struct ContentView: View {
             Divider()
             OpenAtLoginToggle()
             Divider()
+            Button(updater.isUpdateWaiting ? "Update available…" : "Check for updates…") {
+                updater.checkForUpdates()
+            }
+            .disabled(!updater.canCheck)
             Button("Quit") { NSApplication.shared.terminate(nil) }
         }
         .padding()

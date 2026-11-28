@@ -9,6 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     lazy var timer = PomodoroTimer()
     let stopwatch = Stopwatch()
     let sessions = SessionStore()
+    let updater = Updater()
     /// Remembered across launches, like the pet's position.
     @Published private(set) var isPetVisible = UserDefaults.standard.object(forKey: AppDelegate.petVisibleKey) as? Bool ?? true
     private lazy var appWindow = AppWindowController(timer: timer, stopwatch: stopwatch, sessions: sessions)
@@ -33,6 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         pet = PetController(timer: timer, stopwatch: stopwatch, sessions: sessions, visible: isPetVisible)
         pet?.onHide = { [weak self] in self?.togglePet() }
         pet?.onOpenWindow = { [weak self] in self?.openWindow() }
+        pet?.updater = updater
         // claudepet already has ⌃⌥⌘P and cost has ⌃⌥⌘I.
         hotKey = HotKey(keyCode: kVK_ANSI_T, modifiers: controlKey | optionKey | cmdKey) { [weak self] in
             self?.togglePet()
@@ -77,6 +79,7 @@ struct PomodoroApp: App {
             ContentView()
                 .environmentObject(appDelegate.timer)
                 .environmentObject(appDelegate)
+                .environmentObject(appDelegate.updater)
         } label: {
             MenuBarLabel(timer: appDelegate.timer)
         }

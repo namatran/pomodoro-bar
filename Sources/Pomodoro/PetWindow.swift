@@ -41,6 +41,8 @@ final class PetController {
     var onOpenWindow: () -> Void = {} {
         didSet { popout.onSeeAll = onOpenWindow }
     }
+    /// For the right-click menu's Check for updates.
+    var updater: Updater?
 
     init(timer: PomodoroTimer, stopwatch: Stopwatch, sessions: SessionStore, visible: Bool) {
         let size = Self.panelSize(PetSize.saved)
@@ -164,6 +166,13 @@ final class PetController {
         menu.addItem(MenuItem("Reset position") { [weak self] in self?.resetPosition() })
         menu.addItem(MenuItem("Reload sprites") { [weak self] in self?.sprites.reload() })
         menu.addItem(.separator())
+        if let updater {
+            let title = updater.isUpdateWaiting ? "Update available…" : "Check for updates…"
+            // The menu enables items itself, so a disabled one is an item without an action.
+            menu.addItem(updater.canCheck
+                ? MenuItem(title) { updater.checkForUpdates() }
+                : NSMenuItem(title: title, action: nil, keyEquivalent: ""))
+        }
         menu.addItem(MenuItem("Quit") { NSApplication.shared.terminate(nil) })
         return menu
     }
