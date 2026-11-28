@@ -30,9 +30,10 @@ ditto "$BIN_DIR/Sparkle.framework" "$APP/Contents/Frameworks/Sparkle.framework"
 install_name_tool -add_rpath @executable_path/../Frameworks "$APP/Contents/MacOS/Pomodoro"
 
 # The icon is the drawn tomato, rendered by the app itself and scaled to every size macOS wants.
+# Run the bundled copy: only it can find Sparkle.framework, through the rpath added above.
 ICONSET="$(mktemp -d)/AppIcon.iconset"
 mkdir -p "$ICONSET"
-"$BIN" --render-icon "$ICONSET/icon_512x512@2x.png"
+"$APP/Contents/MacOS/Pomodoro" --render-icon "$ICONSET/icon_512x512@2x.png"
 for size in 16 32 128 256 512; do
     sips -z $size $size "$ICONSET/icon_512x512@2x.png" --out "$ICONSET/icon_${size}x${size}.png" >/dev/null
     # 512@2x is the 1024px render itself.
