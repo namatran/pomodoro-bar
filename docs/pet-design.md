@@ -182,6 +182,18 @@ Third round build order:
    - The glows grow with the window, never smaller than at the default 560 × 720, so the panes stay visible in full screen.
    - The site's theme control sits at the top right, level with the window buttons: System, Light and Dark, kept in UserDefaults. It sets the window's appearance only, so the pet and popout keep following macOS.
 
+## Updates
+Settled on 2026-11-27, without a paid Apple Developer account:
+- **Sparkle 2**, added as a Swift package. The app stays ad-hoc signed, so Sparkle trusts an update by its EdDSA signature alone. Its source accepts that: an update passes if either the EdDSA signature or the Apple code signature checks out.
+- **The key:** the private key lives in the owner's login Keychain (from `generate_keys`), and the public one in `sparkle-public-key`, which `build_app.sh` puts in the Info.plist. Without a Developer ID the key can never be rotated, so losing the private key strands every installed copy.
+- **Feed:** `https://pomodoro-web-black.vercel.app/appcast.xml`, served by the website.
+- **Versions:** `VERSION` holds the short version (1.1 is the first with updates). `CFBundleVersion` is the commit count, so it only goes up.
+- **Checks:** automatic, once a day (Sparkle's default), without asking first. Installing still asks, unless the person ticks Sparkle's "automatically download and install".
+- **A menu bar app in the background:** Sparkle never pushes a window behind other apps. A scheduled check that finds an update while Pomodoro isn't in front flags it, and both menus say **Update available…** in place of **Check for updates…**. Choosing it brings the update to the front. `swift run` has no feed or key, so the item is disabled there.
+- **Embedding:** `build_app.sh` copies `Sparkle.framework` into `Contents/Frameworks` with `ditto`, adds the rpath, and ad-hoc signs only the app, without `--deep`, so the framework keeps Sparkle's own signature.
+- **Next:** a release script that zips a version, signs it with `sign_update` and adds it to the website's appcast.
+- **Unverified:** whether Gatekeeper says anything when a Sparkle-installed update first opens. Sparkle has code to clear the quarantine flag; the first real update will show.
+
 ## Build order
 All stages of the first round are built:
 1. Stage 1 and stage 2: pet window, sprites, popout, Google-style rules, Stopwatch, Today.
