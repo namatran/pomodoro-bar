@@ -19,7 +19,7 @@ Without the ID, the website only has a daily estimate: `visitor` is a hash of IP
 - **Unreleased commits on `main`, after the 1.2 bump:**
   - `bdac863` asks once on first launch ("Help count installs?" with Allow and Don't Allow), and sends nothing until Allow
   - `4d4a747` renames the switch to "Help count installs", off until the prompt is answered
-- **pomodoro-web, committed but not pushed:** `a02d164` rewrites the FAQ for the prompt. Push it only together with the release that has the prompt.
+- **pomodoro-web:** `a02d164` rewrote the FAQ and README for the prompt, and `322248f` reverted it so the site matches 1.2. When the prompt ships, revert `322248f`.
 - **Website:** the `install` column and the appcast route already accept and store the ID. Rows without one have `install` null.
 
 ## Code
@@ -27,7 +27,7 @@ Without the ID, the website only has a daily estimate: `visitor` is a hash of IP
 - Website: `app/appcast.xml/route.ts`, `lib/hits.ts`, `supabase/migrations/20261128120000_add_hits_install.sql`
 
 ## To pick it back up, choose one
-- **Keep it, asking first:** ship the two unreleased commits as 1.3, then push pomodoro-web.
+- **Keep it, asking first:** ship the two unreleased commits as 1.3, then revert `322248f` in pomodoro-web and push.
 - **Drop it:** make the app stop sending the ID (remove `feedParameters`, the toggle and the prompt), release that, and change the FAQ back to just downloads and builds. 1.2 copies keep sending IDs until they update. Optionally drop the `install` column afterwards.
 
 Until one is picked, 1.2 is live and sends IDs without asking.
