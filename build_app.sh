@@ -7,13 +7,27 @@ cd "$(dirname "$0")"
 APP=Pomodoro.app
 DEST="/Applications/$APP"
 BUNDLE_ID=com.namatran.Pomodoro
+# Sparkle compares CFBundleVersion, so it must only go up: the commit count does.
+VERSION="$(cat VERSION)"
+BUILD="$(git rev-list --count HEAD)"
+FEED_URL=https://pomodoro-web-black.vercel.app/appcast.xml
+# The EdDSA public key that updates must be signed with. The private key stays in the login Keychain.
+if [ ! -s sparkle-public-key ]; then
+    echo "No sparkle-public-key. Run generate_keys from Sparkle's tools and save the key it prints there." >&2
+    exit 1
+fi
+PUBLIC_KEY="$(tr -d '[:space:]' < sparkle-public-key)"
 
 swift build -c release
-BIN="$(swift build -c release --show-bin-path)/Pomodoro"
+BIN_DIR="$(swift build -c release --show-bin-path)"
+BIN="$BIN_DIR/Pomodoro"
 
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
 cp "$BIN" "$APP/Contents/MacOS/Pomodoro"
+# Sparkle comes signed by its developers; ditto keeps its symlinks, so that signature stays valid.
+ditto "$BIN_DIR/Sparkle.framework" "$APP/Contents/Frameworks/Sparkle.framework"
+install_name_tool -add_rpath @executable_path/../Frameworks "$APP/Contents/MacOS/Pomodoro"
 
 # The icon is the drawn tomato, rendered by the app itself and scaled to every size macOS wants.
 ICONSET="$(mktemp -d)/AppIcon.iconset"
@@ -28,7 +42,7 @@ for size in 16 32 128 256 512; do
 done
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
 
-cat > "$APP/Contents/Info.plist" <<'PLIST'
+cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -44,18 +58,24 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
+    <string>$VERSION</string>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>$BUILD</string>
     <key>LSMinimumSystemVersion</key>
     <string>14.0</string>
     <key>LSUIElement</key>
+    <true/>
+    <key>SUFeedURL</key>
+    <string>$FEED_URL</string>
+    <key>SUPublicEDKey</key>
+    <string>$PUBLIC_KEY</string>
+    <key>SUEnableAutomaticChecks</key>
     <true/>
 </dict>
 </plist>
 PLIST
 
-# Ad-hoc sign so macOS will deliver notifications to the app.
+# Ad-hoc sign so macOS will deliver notifications to the app. No --deep: Sparkle keeps its own signature.
 codesign --force --sign - "$APP"
 
 running() {
@@ -74,4 +94,4 @@ ditto "$APP" "$DEST"
 rm -rf "$APP"
 open "$DEST"
 
-echo "Installed and opened $DEST"
+echo "Installed and opened $DEST ($VERSION, build $BUILD)"
