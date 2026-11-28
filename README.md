@@ -38,11 +38,11 @@ swift package resolve
 ```
 
 ```bash
-"$(find .build/artifacts -name generate_keys -type f | head -1)"
+"$(find .build -path '*/artifacts/sparkle/Sparkle/bin/generate_keys' -type f | head -1)"
 ```
 
 ```bash
-"$(find .build/artifacts -name generate_keys -type f | head -1)" -p > sparkle-public-key
+"$(find .build -path '*/artifacts/sparkle/Sparkle/bin/generate_keys' -type f | head -1)" -p > sparkle-public-key
 ```
 
 Commit `sparkle-public-key`; it's public. Back up the private key somewhere safe outside the repo, with `generate_keys -x <file>`. If it's lost, apps already installed can never be updated again, because without a Developer ID there's no way to switch keys.
