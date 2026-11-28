@@ -90,12 +90,12 @@ struct OpenAtLoginToggle: View {
 
 /// Whether update checks send the random install ID. See `InstallID`.
 struct CountInstallToggle: View {
-    @AppStorage(InstallID.countKey) private var isOn = true
+    @AppStorage(InstallID.countKey) private var isOn = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Toggle("Count this install", isOn: $isOn)
-            Text("Sends a random ID with update checks")
+            Toggle("Help count installs", isOn: $isOn)
+            Text("Sends a random ID when checking for updates, nothing else")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
